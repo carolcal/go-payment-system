@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/skip2/go-qrcode"
 )
 
 type PaymentStatus string
@@ -21,8 +23,8 @@ type Payment struct {
 	ID			string			`json:"id"`
 	Amount		float64			`json:"amount"`
 	Status		PaymentStatus	`json:"status"`
-	CreatedAt	time.Time		`json:"creates_at"`
-	ExpireAt	time.Time		`json:"updated_at"`
+	CreatedAt	time.Time		`json:"created_at"`
+	ExpiresAt	time.Time		`json:"expires_at"`
 	QRCodeData	string			`json:"qr_code_data"`
 }
 
@@ -54,15 +56,29 @@ func generateID() string {
 	return "pay_" + fmt.Sprintf("%d", time.Now().UnixNano())
 }
 
+func generateQRCode(id string) ([]byte, error) {
+	var png []byte
+	url := "http://localhost:8080/payments/" + id + "/pay"
+	png, err := qrcode.Encode(url, qrcode.Medium, 256)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate qrcode")
+	}
+	return png, nil
+}
+
 func createPayment(p *Payment) error {
 	mu.Lock()
 	defer mu.Unlock()
 	id := generateID()
 	p.ID = id
 	p.CreatedAt = time.Now()
-	p.ExpireAt = time.Now().Add(15 * time.Minute)
+	p.ExpiresAt = time.Now().Add(15 * time.Minute)
 	p.Status = StatusPending
-	p.QRCodeData = ""
+	qrcodeBytes, err := generateQRCode(id)
+	if err != nil {
+		return err
+	}
+	p.QRCodeData = "data:image/png;base64," + base64.StdEncoding.EncodeToString(qrcodeBytes)
 	paymentsDB[id] = p
 	return nil
 }
@@ -83,7 +99,7 @@ func makePayment(id string) error {
 		return fmt.Errorf("payment has expired")
 	}
 	
-	if time.Now().After(payment.ExpireAt) {
+	if time.Now().After(payment.ExpiresAt) {
 		payment.Status = StatusExpired
 		return fmt.Errorf("payment has expired")
 	}
@@ -143,7 +159,7 @@ func main() {
 		ctx.JSON(201, payment)
 	})
 
-	router.POST("/payment/:id", func(ctx *gin.Context) {
+	router.POST("/payment/:id/pay", func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		err := makePayment(id)
 		if err != nil {
