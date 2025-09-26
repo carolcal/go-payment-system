@@ -6,14 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 func main() {
 	router := gin.Default()
 
-	router.GET("/payments", handlers.GetPaymentsHandler)
+	router.GET("/payments", handlers.GetAllPaymentsHandler)
 
-	router.GET("/payment/:id", handlers.GetPaymentHandler)
+	router.GET("/payment/:id", handlers.GetPaymentsByIdHandler)
 
 	router.POST("/payment", handlers.CreatePaymentHandler)
 

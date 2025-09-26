@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetPaymentsHandler(ctx *gin.Context) {
-	payments, err := storage.GetPayments()
+func GetAllPaymentsHandler(ctx *gin.Context) {
+	payments, err := storage.GetAllPayments()
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -16,9 +16,9 @@ func GetPaymentsHandler(ctx *gin.Context) {
 	ctx.JSON(200, payments)
 }
 
-func GetPaymentHandler(ctx *gin.Context) {
+func GetPaymentsByIdHandler(ctx *gin.Context) {
 	id := ctx.Param("id")
-	payment, err := storage.GetPayment(id)
+	payment, err := storage.GetPaymentsById(id)
 	if err != nil {
 		ctx.JSON(404, gin.H{"error": "payment not found"})
 		return
@@ -34,7 +34,7 @@ func CreatePaymentHandler(ctx *gin.Context) {
 	}
 
 	payment := &models.PaymentData{
-		Amount:	req.Amount,
+		Amount: req.Amount,
 	}
 	err := storage.CreatePayment(payment)
 	if err != nil {

@@ -10,12 +10,11 @@ import (
 	"qr-payment/utils"
 )
 
-
 var paymentsDB = make(map[string]*models.PaymentData)
 
 var mu sync.Mutex
 
-func GetPayment(id string) (*models.PaymentData, error) {
+func GetPaymentsById(id string) (*models.PaymentData, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	payment, exists := paymentsDB[id]
@@ -25,7 +24,7 @@ func GetPayment(id string) (*models.PaymentData, error) {
 	return payment, nil
 }
 
-func GetPayments() (map[string]*models.PaymentData, error) {
+func GetAllPayments() (map[string]*models.PaymentData, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	return paymentsDB, nil
@@ -63,17 +62,17 @@ func MakePayment(id string) error {
 	case models.StatusExpired:
 		return fmt.Errorf("payment has expired")
 	}
-	
+
 	if time.Now().After(payment.ExpiresAt) {
 		payment.Status = models.StatusExpired
 		return fmt.Errorf("payment has expired")
 	}
-	
+
 	payment.Status = models.StatusPaid
 	return nil
 }
 
-func RemovePayment(id string) (error) {
+func RemovePayment(id string) error {
 	mu.Lock()
 	defer mu.Unlock()
 	_, exists := paymentsDB[id]
