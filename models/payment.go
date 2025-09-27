@@ -15,7 +15,7 @@ const (
 
 type PaymentData struct {
 	ID			string			`json:"id"`
-	Amount		float64			`json:"amount"`
+	Amount		int				`json:"amount"`
 	Status		PaymentStatus	`json:"status"`
 	CreatedAt	time.Time		`json:"created_at"`
 	ExpiresAt	time.Time		`json:"expires_at"`
@@ -25,3 +25,4 @@ type PaymentData struct {
 type CreatePaymentData struct {
 	Amount		float64			`json:"amount"`
 }
+

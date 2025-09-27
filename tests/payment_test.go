@@ -36,12 +36,12 @@ func TestCreatePayment(t *testing.T) {
 	}
 
 	expected := models.PaymentData{
-		Amount: 42.87,
+		Amount: 4287,
 		Status: models.StatusPending,
 	}
 
 	if (result.Amount != expected.Amount) || (result.Status != expected.Status) {
-		t.Errorf("Expected values: { Amount: %.2f, Status: %s }; got: { Amount: %.2f, Status: %s }", result.Amount, result.Status, expected.Amount, expected.Status)
+		t.Errorf("Expected values: { Amount: %d, Status: %s }; got: { Amount: %d, Status: %s }", result.Amount, result.Status, expected.Amount, expected.Status)
 	}
 	if result.ID == "" {
 		t.Errorf("Expected non-empty ID, got: %s", result.ID)

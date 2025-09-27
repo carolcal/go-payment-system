@@ -1,14 +1,19 @@
 package handlers
 
 import (
+	"database/sql"
 	"qr-payment/models"
 	"qr-payment/storage"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllPaymentsHandler(ctx *gin.Context) {
-	payments, err := storage.GetAllPayments()
+type PaymentHandler struct {
+	DB *sql.DB
+}
+
+func (h *PaymentHandler) GetAllPaymentsHandler(ctx *gin.Context) {
+	payments, err := storage.GetAllPayments(h.DB)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -16,17 +21,17 @@ func GetAllPaymentsHandler(ctx *gin.Context) {
 	ctx.JSON(200, payments)
 }
 
-func GetPaymentByIdHandler(ctx *gin.Context) {
+func (h *PaymentHandler) GetPaymentByIdHandler(ctx *gin.Context) {
 	id := ctx.Param("id")
-	payment, err := storage.GetPaymentById(id)
+	payment, err := storage.GetPaymentById(id, h.DB)
 	if err != nil {
-		ctx.JSON(404, gin.H{"error": "payment not found"})
+		ctx.JSON(404, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(200, payment)
 }
 
-func CreatePaymentHandler(ctx *gin.Context) {
+func (h *PaymentHandler) CreatePaymentHandler(ctx *gin.Context) {
 	var req models.CreatePaymentData
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(400, gin.H{"error": err.Error()})
@@ -34,9 +39,9 @@ func CreatePaymentHandler(ctx *gin.Context) {
 	}
 
 	payment := &models.PaymentData{
-		Amount: req.Amount,
+		Amount: int(req.Amount * 100),
 	}
-	err := storage.CreatePayment(payment)
+	err := storage.CreatePayment(payment, h.DB)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -44,9 +49,9 @@ func CreatePaymentHandler(ctx *gin.Context) {
 	ctx.JSON(201, payment)
 }
 
-func MakePaymentHandler(ctx *gin.Context) {
+func (h *PaymentHandler) MakePaymentHandler(ctx *gin.Context) {
 	id := ctx.Param("id")
-	err := storage.MakePayment(id)
+	err := storage.MakePayment(id, h.DB)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -54,9 +59,9 @@ func MakePaymentHandler(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{"status": "payment made successfully"})
 }
 
-func RemovePaymentHandler(ctx *gin.Context) {
+func (h *PaymentHandler) RemovePaymentHandler(ctx *gin.Context) {
 	id := ctx.Param("id")
-	err := storage.RemovePayment(id)
+	err := storage.RemovePayment(id, h.DB)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
