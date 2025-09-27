@@ -2,11 +2,12 @@ package tests
 
 import (
 	"bytes"
-	"encoding/json"
 	"net/http"
 	"testing"
+	"encoding/json"
 
 	"qr-payment/models"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var router = "http://localhost:8080/"
@@ -125,7 +126,30 @@ func TestMakePayment(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Expected status 200, got %d", resp.StatusCode)
 	}
-	//testar se mudou o status
+}
+
+func TestGetPaymentByIdStatusPaid(t *testing.T) {
+	url := router + "payment/" + createdPayment.ID
+
+	resp, err := http.Get(url)
+	if err != nil {
+		t.Fatalf("Returned error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected status code 200, got %d", resp.StatusCode)
+	}
+
+	var result models.PaymentData
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
+
+	if result.Status != models.StatusPaid {
+		t.Errorf("Failed to change Status")
+	}
 }
 
 func TestRemovePayment(t *testing.T) {
@@ -145,5 +169,28 @@ func TestRemovePayment(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Expected status code 200, got %d", resp.StatusCode)
 	}
-	//testar de sumiu do db
+}
+
+func TestGetEmptyPayments(t *testing.T) {
+	url := router + "payments"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		t.Fatalf("Returned error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected status 200, got %d", resp.StatusCode)
+	}
+
+	var result map[string]*models.PaymentData
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		t.Fatalf("Failed to decode responde: %v", err)
+	}
+
+	if len(result) != 0 {
+		t.Errorf("Expected map with length 0, got: %d", len(result))
+	}
 }
