@@ -28,6 +28,13 @@ func main() {
 func setUpRoutes(router *gin.Engine, db *sql.DB) {
 	handler := &handlers.PaymentHandler{DB: db}
 
+	router.LoadHTMLGlob("templates/*.html")
+	router.Static("/static", "./static")
+
+	router.GET("/", func (ctx *gin.Context) {
+		ctx.HTML(200, "index.html", gin.H{})
+	})
+
 	payments := router.Group("/payments")
 	{
 		payments.GET("", handler.GetAllPaymentsHandler)

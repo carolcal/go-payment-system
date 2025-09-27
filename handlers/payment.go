@@ -68,3 +68,8 @@ func (h *PaymentHandler) RemovePaymentHandler(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{"status": "deleted payment successfully"})
 }
+
+
+// func (h *PaymentHandler)HtmlHandler(ctx *gin.Context) {
+// 	ctx.HTML(200, "index.html", gin.H{})
+// }
