@@ -16,9 +16,9 @@ func GetAllPaymentsHandler(ctx *gin.Context) {
 	ctx.JSON(200, payments)
 }
 
-func GetPaymentsByIdHandler(ctx *gin.Context) {
+func GetPaymentByIdHandler(ctx *gin.Context) {
 	id := ctx.Param("id")
-	payment, err := storage.GetPaymentsById(id)
+	payment, err := storage.GetPaymentById(id)
 	if err != nil {
 		ctx.JSON(404, gin.H{"error": "payment not found"})
 		return

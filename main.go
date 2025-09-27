@@ -11,7 +11,7 @@ func main() {
 
 	router.GET("/payments", handlers.GetAllPaymentsHandler)
 
-	router.GET("/payment/:id", handlers.GetPaymentsByIdHandler)
+	router.GET("/payment/:id", handlers.GetPaymentByIdHandler)
 
 	router.POST("/payment", handlers.CreatePaymentHandler)
 

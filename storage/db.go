@@ -14,7 +14,7 @@ var paymentsDB = make(map[string]*models.PaymentData)
 
 var mu sync.Mutex
 
-func GetPaymentsById(id string) (*models.PaymentData, error) {
+func GetPaymentById(id string) (*models.PaymentData, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	payment, exists := paymentsDB[id]
