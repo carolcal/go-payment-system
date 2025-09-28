@@ -37,7 +37,11 @@ async function getAllPayments() {
 
 		if (response.ok) {
 			const data = await response.json();
-			createTable(data)
+			if (Object.keys(data).length != 0) {
+				createTable(data)
+			} else {
+				document.getElementById('tableContainer').innerHTML = "";
+			}
 		} else {
 			const error = await response.json();
 			alert(`Erro: ${error.error}`);
