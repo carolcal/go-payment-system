@@ -7,14 +7,16 @@
 </head>
 
 <body>
-	<h1>Create Payment</h1>
-	<form id="payment-form">
-		<input type="number" id="amount" name="amount" placeholder="Amount" required>
-		<button type="submit">Generate QR Code</button>
-		<br>
-		<div id="qr-code"></div>
-		<div id="tableContainer"></div>
-	</form>
+	<div id="container">
+		<h1>Bem-vindo ao Sistema de Pagamentos!</h1>
+		<form id="payment-form">
+			<input type="number" id="amount" name="amount" placeholder="Valor" required>
+			<button type="submit">Criar Pagamento</button>
+			<br>
+			<div id="qr-code"></div>
+			<div id="tableContainer"></div>
+		</form>
+	</div>
 
 	<script src="/static/script.js"></script>
 </body>

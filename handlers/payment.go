@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"database/sql"
 	"qr-payment/models"
 	"qr-payment/storage"
@@ -13,6 +14,7 @@ type PaymentHandler struct {
 }
 
 func (h *PaymentHandler) GetAllPaymentsHandler(ctx *gin.Context) {
+	fmt.Println("Received GET request on /payments")
 	payments, err := storage.GetAllPayments(h.DB)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})

@@ -1,8 +1,11 @@
+html{
+  font-family: Arial, Helvetica, sans-serif
+}
+
 table{
-  width:100%;
-  table-layout: fixed;
   border-collapse: collapse;
   margin-top: 50px;
+  border: none;
 }
 
 th{
@@ -11,6 +14,10 @@ th{
   font-weight: 500;
   font-size: 12px;
   text-transform: uppercase;
+  background-color: antiquewhite;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
 }
 td{
   padding: 15px;
@@ -18,4 +25,37 @@ td{
   vertical-align:middle;
   font-weight: 300;
   font-size: 12px;
+  border: none;
+  border-bottom: 1px solid #ccc;
+}
+
+button {
+  padding: 10px;
+  background-color: rgb(73, 173, 231);
+  border-radius: 5px;
+  border: none;
+  color: white;
+  font-weight: 800;
+}
+
+.pay-btn {
+  background-color: rgb(87, 179, 87);
+}
+
+.del-btn {
+  background-color: rgb(241, 97, 97);
+}
+
+input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }

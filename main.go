@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
 
 	"qr-payment/handlers"
 	"qr-payment/storage"
@@ -18,11 +18,10 @@ func main() {
 	db, err := storage.NewDatabase()
     if err != nil { fmt.Print(err) }
     defer db.Close()
-
-
+	
 	router := gin.Default()
 	setUpRoutes(router,db)
-	router.Run()
+	router.Run("0.0.0.0:8080")
 }
 
 func setUpRoutes(router *gin.Engine, db *sql.DB) {
