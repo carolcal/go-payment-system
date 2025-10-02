@@ -77,13 +77,21 @@ function createTable(data) {
 			}
 			tableHTML += `<td>${value}</td>`;
 		});
+		cpyButton = `<button type="button" class="cpy-btn" data-qr="${item.qr_code_data}">Copiar Código</button>`
 		payButton = `<button type="button" class="pay-btn" data-id="${item.id}">Pagar!</button>`;
 		delButton = `<button type="button" class="del-btn" data-id="${item.id}">Deletar!</button>`;
-		tableHTML += `<td>${payButton} ${delButton}</td>`;
+		tableHTML += `<td>${cpyButton} ${payButton} ${delButton}</td>`;
 		tableHTML += '</tr>';
 	});
 	tableHTML += '</tbody></table>';
 	document.getElementById('tableContainer').innerHTML = tableHTML;
+
+	document.querySelectorAll('.cpy-btn').forEach(button => {
+		button.addEventListener('click', (event) => {
+			const item = event.target.getAttribute('data-qr');
+			navigator.clipboard.writeText(item)
+		});
+	});
 
 	document.querySelectorAll('.pay-btn').forEach(button => {
 		button.addEventListener('click', (event) => {

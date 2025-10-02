@@ -6,6 +6,7 @@ table{
   border-collapse: collapse;
   margin-top: 50px;
   border: none;
+  word-wrap: break-word;
 }
 
 th{
@@ -36,6 +37,11 @@ button {
   border: none;
   color: white;
   font-weight: 800;
+}
+
+button:active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1); 
 }
 
 .pay-btn {
