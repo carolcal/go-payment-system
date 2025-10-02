@@ -1,5 +1,72 @@
 document.getElementById('payment-form').addEventListener('submit', createPayment);
 
+
+async function getAllUsers() {
+	try {
+		const response = await fetch('/users', {
+			method: 'GET',
+		})
+
+		if (response.ok) {
+			const data = await response.json();
+			if (Object.keys(data).length != 0) {
+				createUsersTable(data)
+			} else {
+				document.getElementById('usersTable').innerHTML = "";
+			}
+		} else {
+			const error = await response.json();
+			alert(`Erro: ${error.error}`);
+		}
+	} catch (err) {
+		console.error("Error:", err);
+		alert("Ocorreu um erro inesperado");
+	}
+}
+
+function createUsersTable(data) {
+	let tableHTML = '<table border="1"><thead><tr>';
+	const firstItem = Object.values(data)[0];
+	Object.keys(firstItem).forEach(key => {
+		tableHTML += `<th>${key}</th>`;
+	});
+	tableHTML += '<th>actions</th>'
+	tableHTML += '</tr></thead><tbody>';
+
+	Object.values(data).forEach(item => {
+		tableHTML += '<tr>';
+		Object.entries(item).forEach(([key, value]) => {
+			if (key == "created_at" || key == "updated_at") {
+				const date = new Date(value);
+				value = date.toLocaleDateString('en-GB');
+			} else if (key == "balance") {
+				const formatter = new Intl.NumberFormat('pt-BR', {
+					style: 'currency',
+					currency: 'BRD',
+					minimumFractionDigits: 2,
+				});
+				value = formatter.format(value / 100);
+			}
+			tableHTML += `<td>${value}</td>`;
+		});
+
+		viewButton = `<button type="button" class="view-btn" data="${item}">Visualizar</button>`
+		tableHTML += `<td>${viewButton}</td>`;
+		tableHTML += '</tr>';
+	});
+	tableHTML += '</tbody></table>';
+	document.getElementById('usersTable').innerHTML = tableHTML;
+
+	document.querySelectorAll('.view-btn').forEach(button => {
+		button.addEventListener('click', (event) => {
+			const item = event.target.getAttribute('data');
+			document.getElementById('accountInfo').hidden = false;
+			getAllPayments();
+		});
+	});
+}
+
+
 async function createPayment(event) {
 	event.preventDefault();
 
@@ -38,9 +105,9 @@ async function getAllPayments() {
 		if (response.ok) {
 			const data = await response.json();
 			if (Object.keys(data).length != 0) {
-				createTable(data)
+				createHistoryTable(data)
 			} else {
-				document.getElementById('tableContainer').innerHTML = "";
+				document.getElementById('accountHistory').innerHTML = "";
 			}
 		} else {
 			const error = await response.json();
@@ -52,11 +119,13 @@ async function getAllPayments() {
 	}
 }
 
-function createTable(data) {
+function createHistoryTable(data) {
 	let tableHTML = '<table border="1"><thead><tr>';
 	const firstItem = Object.values(data)[0];
 	Object.keys(firstItem).forEach(key => {
-		tableHTML += `<th>${key}</th>`;
+		if (key != 'qr_code_data') {
+			tableHTML += `<th>${key}</th>`;
+		}
 	});
 	tableHTML += '<th>actions</th>'
 	tableHTML += '</tr></thead><tbody>';
@@ -64,27 +133,28 @@ function createTable(data) {
 	Object.values(data).forEach(item => {
 		tableHTML += '<tr>';
 		Object.entries(item).forEach(([key, value]) => {
-			if (key == "created_at" || key == "expires_at") {
-				const date = new Date(value);
-				value = date.toLocaleString();
-			} else if (key == "amount") {
-				const formatter = new Intl.NumberFormat('pt-BR', {
-					style: 'currency',
-					currency: 'BRD',
-					minimumFractionDigits: 2,
-				});
-				value = formatter.format(value / 100);
+			if (key != 'qr_code_data') {
+				if (key == "created_at" || key == "expires_at") {
+					const date = new Date(value);
+					value = date.toLocaleString();
+				} else if (key == "amount") {
+					const formatter = new Intl.NumberFormat('pt-BR', {
+						style: 'currency',
+						currency: 'BRD',
+						minimumFractionDigits: 2,
+					});
+					value = formatter.format(value / 100);
+				}
+				tableHTML += `<td>${value}</td>`;
 			}
-			tableHTML += `<td>${value}</td>`;
 		});
 		cpyButton = `<button type="button" class="cpy-btn" data-qr="${item.qr_code_data}">Copiar Código</button>`
-		payButton = `<button type="button" class="pay-btn" data-id="${item.id}">Pagar!</button>`;
-		delButton = `<button type="button" class="del-btn" data-id="${item.id}">Deletar!</button>`;
-		tableHTML += `<td>${cpyButton} ${payButton} ${delButton}</td>`;
+		delButton = `<button type="button" class="del-btn" data-id="${item.id}">Cancelar</button>`;
+		tableHTML += `<td>${cpyButton} ${delButton}</td>`;
 		tableHTML += '</tr>';
 	});
 	tableHTML += '</tbody></table>';
-	document.getElementById('tableContainer').innerHTML = tableHTML;
+	document.getElementById('accountHistory').innerHTML = tableHTML;
 
 	document.querySelectorAll('.cpy-btn').forEach(button => {
 		button.addEventListener('click', (event) => {
@@ -158,4 +228,4 @@ async function delItem(id) {
 }
 
 
-getAllPayments();
+getAllUsers()
