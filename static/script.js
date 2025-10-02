@@ -102,8 +102,10 @@ function createTable(data) {
 
 function renderQrCode(data) {
 	const payload = data.qr_code_data;
+	const qrDiv = document.getElementById("qrcode");
+	qrDiv.innerHTML = "";
 
-	new QRCode(document.getElementById("qrcode"), {
+	new QRCode(qrDiv, {
       text: payload,
       width: 256,
       height: 256,

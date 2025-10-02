@@ -7,6 +7,7 @@ import (
 
 	"qr-payment/models"
 	"qr-payment/utils"
+	"qr-payment/qrcode"
 )
 
 
@@ -53,7 +54,7 @@ func CreatePayment(p *models.PaymentData, db *sql.DB) error {
 	p.CreatedAt = time.Now()
 	p.ExpiresAt = time.Now().Add(15 * time.Minute)
 	p.Status = models.StatusPending
-	p.QRCodeData = utils.GenerateQRCode("92991514078", 10, "Arthur Dent", "Terra")
+	p.QRCodeData = qrcode.GenerateQRCode("92991514078", p.Amount, "Arthur Dent", "Terra")
 
 	_, err := db.Exec("INSERT INTO payments VALUES(?, ?, ?, ?, ?, ?);", p.ID, p.Amount, p.Status, p.CreatedAt, p.ExpiresAt, p.QRCodeData)
 	if (err != nil) {
