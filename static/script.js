@@ -56,9 +56,7 @@ function createTable(data) {
 	let tableHTML = '<table border="1"><thead><tr>';
 	const firstItem = Object.values(data)[0];
 	Object.keys(firstItem).forEach(key => {
-		if (key != "qr_code_data") {
-			tableHTML += `<th>${key}</th>`;
-		}
+		tableHTML += `<th>${key}</th>`;
 	});
 	tableHTML += '<th>actions</th>'
 	tableHTML += '</tr></thead><tbody>';
@@ -66,20 +64,18 @@ function createTable(data) {
 	Object.values(data).forEach(item => {
 		tableHTML += '<tr>';
 		Object.entries(item).forEach(([key, value]) => {
-			if (key != "qr_code_data") {
-				if (key == "created_at" || key == "expires_at") {
-					const date = new Date(value);
-					value = date.toLocaleString();
-				} else if (key == "amount") {
-					const formatter = new Intl.NumberFormat('pt-BR', {
-						style: 'currency',
-						currency: 'BRD',
-						minimumFractionDigits: 2,
-					});
-					value = formatter.format(value / 100);
-				}
-				tableHTML += `<td>${value}</td>`;
+			if (key == "created_at" || key == "expires_at") {
+				const date = new Date(value);
+				value = date.toLocaleString();
+			} else if (key == "amount") {
+				const formatter = new Intl.NumberFormat('pt-BR', {
+					style: 'currency',
+					currency: 'BRD',
+					minimumFractionDigits: 2,
+				});
+				value = formatter.format(value / 100);
 			}
+			tableHTML += `<td>${value}</td>`;
 		});
 		payButton = `<button type="button" class="pay-btn" data-id="${item.id}">Pagar!</button>`;
 		delButton = `<button type="button" class="del-btn" data-id="${item.id}">Deletar!</button>`;
@@ -105,8 +101,14 @@ function createTable(data) {
 }
 
 function renderQrCode(data) {
-	imgHTML = `<img src=${data.qr_code_data}>`
-	document.getElementById('qr-code').innerHTML = imgHTML;
+	const payload = data.qr_code_data;
+
+	new QRCode(document.getElementById("qrcode"), {
+      text: payload,
+      width: 256,
+      height: 256,
+      correctLevel: QRCode.CorrectLevel.H
+    });
 }
 
 async function payItem(id) {

@@ -1,10 +1,9 @@
 package storage
 
 import (
-	"database/sql"
-	"encoding/base64"
 	"fmt"
 	"time"
+	"database/sql"
 
 	"qr-payment/models"
 	"qr-payment/utils"
@@ -54,13 +53,9 @@ func CreatePayment(p *models.PaymentData, db *sql.DB) error {
 	p.CreatedAt = time.Now()
 	p.ExpiresAt = time.Now().Add(15 * time.Minute)
 	p.Status = models.StatusPending
-	qrcodeBytes, err := utils.GenerateQRCode(id)
-	if err != nil {
-		return err
-	}
-	p.QRCodeData = "data:image/png;base64," + base64.StdEncoding.EncodeToString(qrcodeBytes)
+	p.QRCodeData = utils.GenerateQRCode("92991514078", 10, "Arthur Dent", "Terra")
 
-	_, err = db.Exec("INSERT INTO payments VALUES(?, ?, ?, ?, ?, ?);", p.ID, p.Amount, p.Status, p.CreatedAt, p.ExpiresAt, p.QRCodeData)
+	_, err := db.Exec("INSERT INTO payments VALUES(?, ?, ?, ?, ?, ?);", p.ID, p.Amount, p.Status, p.CreatedAt, p.ExpiresAt, p.QRCodeData)
 	if (err != nil) {
 		return fmt.Errorf("falha ao criar novo pagamento")
 	}
