@@ -6,16 +6,15 @@ import (
 	"database/sql"
 
 	"qr-payment/models"
-	"qr-payment/utils"
 	"qr-payment/qrcode"
+	"qr-payment/utils"
 )
-
 
 func GetPaymentById(id string, db *sql.DB) (*models.PaymentData, error) {
 	var payment models.PaymentData
 
 	row := db.QueryRow(`SELECT * FROM payments WHERE id=?`, id)
-	err := utils.ScanRow(row, &payment)
+	err := utils.ScanPaymentRow(row, &payment)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -38,7 +37,7 @@ func GetAllPayments(db *sql.DB) (map[string]*models.PaymentData, error) {
 
 	for rows.Next() {
 		var payment models.PaymentData
-		err := utils.ScanRows(rows, &payment)
+		err := utils.ScanPaymentRows(rows, &payment)
 		if err != nil {
 			return nil, fmt.Errorf("erro ao escanear pagamento: %w", err)
 		}
@@ -49,7 +48,7 @@ func GetAllPayments(db *sql.DB) (map[string]*models.PaymentData, error) {
 }
 
 func CreatePayment(p *models.PaymentData, db *sql.DB) error {
-	id := utils.GenerateID()
+	id := utils.GenerateID("pay")
 	p.ID = id
 	p.CreatedAt = time.Now()
 	p.ExpiresAt = time.Now().Add(15 * time.Minute)
@@ -57,7 +56,7 @@ func CreatePayment(p *models.PaymentData, db *sql.DB) error {
 	p.QRCodeData = qrcode.GenerateQRCode("92991514078", p.Amount, "Arthur Dent", "Terra")
 
 	_, err := db.Exec("INSERT INTO payments VALUES(?, ?, ?, ?, ?, ?);", p.ID, p.Amount, p.Status, p.CreatedAt, p.ExpiresAt, p.QRCodeData)
-	if (err != nil) {
+	if err != nil {
 		return fmt.Errorf("falha ao criar novo pagamento")
 	}
 
@@ -68,7 +67,7 @@ func MakePayment(id string, db *sql.DB) error {
 	var payment models.PaymentData
 
 	row := db.QueryRow(`SELECT * FROM payments WHERE id=?`, id)
-	err := utils.ScanRow(row, &payment)
+	err := utils.ScanPaymentRow(row, &payment)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("pagamento não encontrado")
@@ -77,12 +76,12 @@ func MakePayment(id string, db *sql.DB) error {
 	}
 
 	switch payment.Status {
-		case models.StatusPaid:
-			return fmt.Errorf("pagamento já realizado")
-		case models.StatusFailed:
-			return fmt.Errorf("pagamento falhou anteriormente")
-		case models.StatusExpired:
-			return fmt.Errorf("pagamento expirado")
+	case models.StatusPaid:
+		return fmt.Errorf("pagamento já realizado")
+	case models.StatusFailed:
+		return fmt.Errorf("pagamento falhou anteriormente")
+	case models.StatusExpired:
+		return fmt.Errorf("pagamento expirado")
 	}
 
 	if time.Now().After(payment.ExpiresAt) {
@@ -105,7 +104,7 @@ func RemovePayment(id string, db *sql.DB) error {
 	var payment models.PaymentData
 
 	row := db.QueryRow(`SELECT * FROM payments WHERE id=?`, id)
-	err := utils.ScanRow(row, &payment)
+	err := utils.ScanPaymentRow(row, &payment)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("pagamento não encontrado")

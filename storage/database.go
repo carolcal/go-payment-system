@@ -7,7 +7,17 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const create string = `
+const usersTable string = `
+	CREATE TABLE IF NOT EXISTS users (
+	id TEXT PRIMARY KEY,
+	created_at DATETIME NOT NULL,
+	updated_at DATETIME NOT NULL,
+	name TEXT NOT NULL,
+	cpf VARCHAR(11) NOT NULL,
+	balance INTEGER
+);`
+
+const paymentTable string = `
 	CREATE TABLE IF NOT EXISTS payments (
 	id TEXT PRIMARY KEY,
 	amount INTEGER NOT NULL,
@@ -27,7 +37,11 @@ func NewDatabase() (*sql.DB, error){
 		return nil, fmt.Errorf("failed to open database: %w", err)
     }
 
-	if _, err := db.Exec(create); err != nil {
+	if _, err := db.Exec(usersTable); err != nil {
+		return nil, fmt.Errorf("failed to execute schema creation: %w", err)
+	}
+
+	if _, err := db.Exec(paymentTable); err != nil {
 		return nil, fmt.Errorf("failed to execute schema creation: %w", err)
 	}
 

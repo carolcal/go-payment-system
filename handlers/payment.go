@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"database/sql"
 
 	"qr-payment/models"
@@ -15,7 +14,6 @@ type PaymentHandler struct {
 }
 
 func (h *PaymentHandler) GetAllPaymentsHandler(ctx *gin.Context) {
-	fmt.Println("Received GET request on /payments")
 	payments, err := storage.GetAllPayments(h.DB)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
@@ -71,8 +69,3 @@ func (h *PaymentHandler) RemovePaymentHandler(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{"status": "deleted payment successfully"})
 }
-
-
-// func (h *PaymentHandler)HtmlHandler(ctx *gin.Context) {
-// 	ctx.HTML(200, "index.html", gin.H{})
-// }
