@@ -51,6 +51,7 @@ func setUpRoutes(router *gin.Engine, db *sql.DB) {
 	payments := router.Group("/payments")
 	{
 		payments.GET("", phandler.GetAllPaymentsHandler)
+		payments.GET("/:user_id/:user_type", phandler.GetAllPaymentsByUserIdHandler)
 	}
 
 	payment := router.Group("/payment")

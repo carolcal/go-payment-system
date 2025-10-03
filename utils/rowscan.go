@@ -8,10 +8,12 @@ import (
 func ScanPaymentRow(row *sql.Row, payment *models.PaymentData) error {
 	return row.Scan(
 		&payment.ID,
-		&payment.Amount,
-		&payment.Status,
 		&payment.CreatedAt,
 		&payment.ExpiresAt,
+		&payment.Amount,
+		&payment.Status,
+		&payment.ReceiverId,
+		&payment.PayerId,
 		&payment.QRCodeData,
 	)
 }
@@ -19,10 +21,12 @@ func ScanPaymentRow(row *sql.Row, payment *models.PaymentData) error {
 func ScanPaymentRows(rows *sql.Rows, payment *models.PaymentData) error {
 	return rows.Scan(
 		&payment.ID,
-		&payment.Amount,
-		&payment.Status,
 		&payment.CreatedAt,
 		&payment.ExpiresAt,
+		&payment.Amount,
+		&payment.Status,
+		&payment.ReceiverId,
+		&payment.PayerId,
 		&payment.QRCodeData,
 	)
 }

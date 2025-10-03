@@ -20,10 +20,12 @@ const usersTable string = `
 const paymentTable string = `
 	CREATE TABLE IF NOT EXISTS payments (
 	id TEXT PRIMARY KEY,
-	amount INTEGER NOT NULL,
-	status VARCHAR(10) NOT NULL,
 	created_at DATETIME NOT NULL,
 	expired_at DATETIME NOT NULL,
+	amount INTEGER NOT NULL,
+	status VARCHAR(10) NOT NULL,
+	receiver_id TEXT NOT NULL,
+	payer_id TEXT,
 	qrcode_data TEXT NOT NULL
 );`
 

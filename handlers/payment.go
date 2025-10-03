@@ -22,6 +22,24 @@ func (h *PaymentHandler) GetAllPaymentsHandler(ctx *gin.Context) {
 	ctx.JSON(200, payments)
 }
 
+func (h *PaymentHandler) GetAllPaymentsByUserIdHandler(ctx *gin.Context) {
+	user_id := ctx.Param("user_id")
+	user_type_param := ctx.Param("user_type")
+
+	user_type, isValid := models.IsValidTypeUser(user_type_param)
+	if !isValid {
+		ctx.JSON(400, gin.H{"error": "user_type deve ser 'receiver_id' ou 'payer_id'"})
+		return
+	}
+
+	payments, err := storage.GetAllPaymentsByUserId(user_type, user_id, h.DB)
+	if err != nil {
+		ctx.JSON(404, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(200, payments)
+}
+
 func (h *PaymentHandler) GetPaymentByIdHandler(ctx *gin.Context) {
 	id := ctx.Param("id")
 	payment, err := storage.GetPaymentById(id, h.DB)
@@ -41,6 +59,7 @@ func (h *PaymentHandler) CreatePaymentHandler(ctx *gin.Context) {
 
 	payment := &models.PaymentData{
 		Amount: int(req.Amount * 100),
+		ReceiverId: req.ReceiverId,
 	}
 	err := storage.CreatePayment(payment, h.DB)
 	if err != nil {

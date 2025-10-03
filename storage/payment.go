@@ -47,6 +47,28 @@ func GetAllPayments(db *sql.DB) (map[string]*models.PaymentData, error) {
 	return allPayments, nil
 }
 
+func GetAllPaymentsByUserId(user_type models.TypeUser, user_id string, db *sql.DB) (map[string]*models.PaymentData, error) {
+	allPayments := make(map[string]*models.PaymentData)
+
+	query := fmt.Sprintf(`SELECT * FROM payments WHERE %s=? `, user_type)
+	rows, err := db.Query(query, user_id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var payment models.PaymentData
+		err := utils.ScanPaymentRows(rows, &payment)
+		if err != nil {
+			return nil, fmt.Errorf("erro ao escanear pagamento: %w", err)
+		}
+		allPayments[payment.ID] = &payment
+	}
+
+	return allPayments, nil
+}
+
 func CreatePayment(p *models.PaymentData, db *sql.DB) error {
 	id := utils.GenerateID("pay")
 	p.ID = id
@@ -55,7 +77,7 @@ func CreatePayment(p *models.PaymentData, db *sql.DB) error {
 	p.Status = models.StatusPending
 	p.QRCodeData = qrcode.GenerateQRCode("92991514078", p.Amount, "Arthur Dent", "Terra")
 
-	_, err := db.Exec("INSERT INTO payments VALUES(?, ?, ?, ?, ?, ?);", p.ID, p.Amount, p.Status, p.CreatedAt, p.ExpiresAt, p.QRCodeData)
+	_, err := db.Exec("INSERT INTO payments VALUES(?, ?, ?, ?, ?, ?, ?, ?);", p.ID, p.CreatedAt, p.ExpiresAt, p.Amount, p.Status, p.ReceiverId, "", p.QRCodeData)
 	if err != nil {
 		return fmt.Errorf("falha ao criar novo pagamento")
 	}

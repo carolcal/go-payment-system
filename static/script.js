@@ -50,7 +50,7 @@ function createUsersTable(data) {
 			tableHTML += `<td>${value}</td>`;
 		});
 
-		viewButton = `<button type="button" class="view-btn" data="${item}">Visualizar</button>`
+		viewButton = `<button type="button" class="view-btn" data="${item.id}">Visualizar</button>`
 		tableHTML += `<td>${viewButton}</td>`;
 		tableHTML += '</tr>';
 	});
@@ -59,9 +59,11 @@ function createUsersTable(data) {
 
 	document.querySelectorAll('.view-btn').forEach(button => {
 		button.addEventListener('click', (event) => {
-			const item = event.target.getAttribute('data');
+			console.log("view infos")
+			const id = event.target.getAttribute('data');
 			document.getElementById('accountInfo').hidden = false;
-			getAllPayments();
+			getAllPayments(id, "receiver_id");
+			getAllPayments(id, "payer_id");
 		});
 	});
 }
@@ -96,18 +98,24 @@ async function createPayment(event) {
 	}
 }
 
-async function getAllPayments() {
+async function getAllPayments(user_id, user_type) {
+	console.log("get payments " + user_type)
 	try {
-		const response = await fetch('/payments', {
+		const response = await fetch(`/payments/${user_id}/${user_type}`, {
 			method: 'GET',
 		})
 
 		if (response.ok) {
 			const data = await response.json();
+			console.log(data)
 			if (Object.keys(data).length != 0) {
-				createHistoryTable(data)
+				createHistoryTable(data, user_type)
 			} else {
-				document.getElementById('accountHistory').innerHTML = "";
+				if (user_type == "receiver_id") {
+					document.getElementById('accountReceiveHistory').innerHTML = "";
+				} else {
+					document.getElementById('accountPayHistory').innerHTML = "";
+				}
 			}
 		} else {
 			const error = await response.json();
@@ -119,11 +127,17 @@ async function getAllPayments() {
 	}
 }
 
-function createHistoryTable(data) {
-	let tableHTML = '<table border="1"><thead><tr>';
+function createHistoryTable(data, user_type) {
+	let tableHTML = "";
+	if (user_type == "receiver_id") {
+		tableHTML += "<h5>Pagamentos Gerados</h5>"
+	} else {
+		tableHTML += "<h5>Pagamentos Efetuados</h5>"
+	}
+	tableHTML += '<table border="1"><thead><tr>';
 	const firstItem = Object.values(data)[0];
 	Object.keys(firstItem).forEach(key => {
-		if (key != 'qr_code_data') {
+		if (key != 'qr_code_data' && key != user_type) {
 			tableHTML += `<th>${key}</th>`;
 		}
 	});
@@ -133,7 +147,7 @@ function createHistoryTable(data) {
 	Object.values(data).forEach(item => {
 		tableHTML += '<tr>';
 		Object.entries(item).forEach(([key, value]) => {
-			if (key != 'qr_code_data') {
+			if (key != 'qr_code_data' && key != user_type) {
 				if (key == "created_at" || key == "expires_at") {
 					const date = new Date(value);
 					value = date.toLocaleString();
@@ -154,7 +168,11 @@ function createHistoryTable(data) {
 		tableHTML += '</tr>';
 	});
 	tableHTML += '</tbody></table>';
-	document.getElementById('accountHistory').innerHTML = tableHTML;
+	if (user_type == "receiver_id") {
+		document.getElementById('accountReceiveHistory').innerHTML = tableHTML;
+	} else {
+		document.getElementById('accountPayHistory').innerHTML = tableHTML;
+	}
 
 	document.querySelectorAll('.cpy-btn').forEach(button => {
 		button.addEventListener('click', (event) => {
@@ -184,11 +202,11 @@ function renderQrCode(data) {
 	qrDiv.innerHTML = "";
 
 	new QRCode(qrDiv, {
-      text: payload,
-      width: 256,
-      height: 256,
-      correctLevel: QRCode.CorrectLevel.H
-    });
+		text: payload,
+		width: 256,
+		height: 256,
+		correctLevel: QRCode.CorrectLevel.H
+	});
 }
 
 async function payItem(id) {
