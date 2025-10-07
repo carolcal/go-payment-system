@@ -5,6 +5,6 @@ import (
 	"time"
 )
 
-func GenerateID() string {
-	return "pay_" + fmt.Sprintf("%d", time.Now().UnixNano())
+func GenerateID(prefix string) string {
+	return prefix + "_" + fmt.Sprintf("%d", time.Now().UnixNano())
 }

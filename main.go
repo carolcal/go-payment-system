@@ -14,36 +14,52 @@ import (
 
 func main() {
 
-
 	db, err := storage.NewDatabase()
-    if err != nil { fmt.Print(err) }
-    defer db.Close()
-	
+	if err != nil {
+		fmt.Print(err)
+	}
+	defer db.Close()
+
 	router := gin.Default()
-	setUpRoutes(router,db)
+	setUpRoutes(router, db)
 	router.Run("0.0.0.0:8080")
 }
 
 func setUpRoutes(router *gin.Engine, db *sql.DB) {
-	handler := &handlers.PaymentHandler{DB: db}
+	phandler := &handlers.PaymentHandler{DB: db}
+	uhandler := &handlers.UserHandler{DB: db}
 
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/static", "./static")
 
-	router.GET("/", func (ctx *gin.Context) {
+	router.GET("/", func(ctx *gin.Context) {
 		ctx.HTML(200, "index.html", gin.H{})
 	})
 
+	users := router.Group("/users")
+	{
+		users.GET("", uhandler.GetAllUsersHandler)
+	}
+
+	user := router.Group("/user")
+	{
+		user.POST("", uhandler.CreateUserHandler)
+		user.GET("/:id", uhandler.GetUserByIdHandler)
+		user.PUT("/:id/balance", uhandler.UpdateBalanceHandler)
+		user.DELETE("/:id", uhandler.RemoveUserHandler)
+	}
+
 	payments := router.Group("/payments")
 	{
-		payments.GET("", handler.GetAllPaymentsHandler)
+		payments.GET("", phandler.GetAllPaymentsHandler)
+		payments.GET("/:user_id/:user_type", phandler.GetAllPaymentsByUserIdHandler)
 	}
 
 	payment := router.Group("/payment")
 	{
-		payment.POST("", handler.CreatePaymentHandler)
-		payment.GET("/:id", handler.GetPaymentByIdHandler)
-		payment.POST("/:id/pay", handler.MakePaymentHandler)
-		payment.DELETE("/:id", handler.RemovePaymentHandler)
+		payment.POST("", phandler.CreatePaymentHandler)
+		payment.GET("/:id", phandler.GetPaymentByIdHandler)
+		payment.POST("/:user_id/pay", phandler.ProcessPaymentHandler)
+		payment.DELETE("/:id", phandler.RemovePaymentHandler)
 	}
 }
