@@ -52,7 +52,7 @@ func CreateUser(u *models.UserData, db *sql.DB) error {
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = u.CreatedAt
 
-	_, err := db.Exec("INSERT INTO users VALUES(?, ?, ?, ?, ?, ?);", u.ID, u.CreatedAt, u.UpdatedAt, u.Name, u.CPF, u.Balance)
+	_, err := db.Exec("INSERT INTO users VALUES(?, ?, ?, ?, ?, ?, ?);", u.ID, u.CreatedAt, u.UpdatedAt, u.Name, u.CPF, u.Balance, u.City)
 	if (err != nil) {
 		return fmt.Errorf("falha ao criar novo usuário")
 	}

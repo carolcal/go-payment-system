@@ -2,11 +2,12 @@ package tests
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"testing"
-	"encoding/json"
 
 	"qr-payment/models"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -114,7 +115,7 @@ func TestGetAllPayments(t *testing.T) {
 	}
 }
 
-func TestMakePayment(t *testing.T) {
+func TestProcessPayment(t *testing.T) {
 	url := router + "payment/" + createdPayment.ID + "/pay"
 
 	resp, err := http.Post(url, "application/json", nil)
@@ -159,7 +160,7 @@ func TestRemovePayment(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create DELETE request: %v", err)
 	}
-	
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatalf("Returned error: %v", err)

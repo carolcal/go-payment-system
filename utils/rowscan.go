@@ -39,6 +39,7 @@ func ScanUserRow(row *sql.Row, user *models.UserData) error {
 		&user.Name,
 		&user.CPF,
 		&user.Balance,
+		&user.City,
 	)
 }
 
@@ -50,5 +51,6 @@ func ScanUserRows(rows *sql.Rows, user *models.UserData) error {
 		&user.Name,
 		&user.CPF,
 		&user.Balance,
+		&user.City,
 	)
 }

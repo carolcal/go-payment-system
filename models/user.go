@@ -11,12 +11,14 @@ type UserData struct {
 	Name		string		`json:"name"`
 	CPF			string		`json:"cpf"`
 	Balance		int			`json:"balance"`
+	City		string		`json:"city"`
 }
 
 type CreateUserData struct {
-	Name		string		`json:"name"`
-	CPF			string		`json:"cpf"`
-	Balance		float64		`json:"balance"`
+	Name		string		`json:"name" binding:"required"`
+	CPF			string		`json:"cpf" binding:"required"`
+	Balance		float64		`json:"balance" binding:"required"`
+	City		string		`json:"city" binding:"required"`
 }
 
 type UpdateBalanceData struct {

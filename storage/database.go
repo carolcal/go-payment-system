@@ -14,7 +14,8 @@ const usersTable string = `
 	updated_at DATETIME NOT NULL,
 	name TEXT NOT NULL,
 	cpf VARCHAR(11) NOT NULL,
-	balance INTEGER
+	balance INTEGER,
+	city TEXT NOT NULL
 );`
 
 const paymentTable string = `
@@ -26,7 +27,7 @@ const paymentTable string = `
 	status VARCHAR(10) NOT NULL,
 	receiver_id TEXT NOT NULL,
 	payer_id TEXT,
-	qrcode_data TEXT NOT NULL
+	qr_code_data TEXT NOT NULL
 );`
 
 func NewDatabase() (*sql.DB, error){

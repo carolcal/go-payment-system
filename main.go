@@ -14,13 +14,14 @@ import (
 
 func main() {
 
-
 	db, err := storage.NewDatabase()
-    if err != nil { fmt.Print(err) }
-    defer db.Close()
-	
+	if err != nil {
+		fmt.Print(err)
+	}
+	defer db.Close()
+
 	router := gin.Default()
-	setUpRoutes(router,db)
+	setUpRoutes(router, db)
 	router.Run("0.0.0.0:8080")
 }
 
@@ -31,7 +32,7 @@ func setUpRoutes(router *gin.Engine, db *sql.DB) {
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/static", "./static")
 
-	router.GET("/", func (ctx *gin.Context) {
+	router.GET("/", func(ctx *gin.Context) {
 		ctx.HTML(200, "index.html", gin.H{})
 	})
 
@@ -58,7 +59,7 @@ func setUpRoutes(router *gin.Engine, db *sql.DB) {
 	{
 		payment.POST("", phandler.CreatePaymentHandler)
 		payment.GET("/:id", phandler.GetPaymentByIdHandler)
-		payment.POST("/:id/pay", phandler.MakePaymentHandler)
+		payment.POST("/:user_id/pay", phandler.ProcessPaymentHandler)
 		payment.DELETE("/:id", phandler.RemovePaymentHandler)
 	}
 }

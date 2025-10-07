@@ -12,6 +12,9 @@ func GetMerchantAccountInfo(pixKey string) string {
 }
 
 func GetTransationAmount(amount int) string {
+	if amount == 0 {
+		return ""
+	}
 	dollars := amount / 100
 	cents := amount % 100
 	amountStr := fmt.Sprintf("%d.%02d", dollars, cents)

@@ -39,12 +39,12 @@ func (h *UserHandler) GetAllUsersHandler(ctx *gin.Context) {
 
 func (h *UserHandler) GetUserByIdHandler(ctx *gin.Context) {
 	id := ctx.Param("id")
-	payment, err := storage.GetUserById(id, h.DB)
+	user, err := storage.GetUserById(id, h.DB)
 	if err != nil {
 		ctx.JSON(404, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(200, payment)
+	ctx.JSON(200, user)
 }
 
 func (h *UserHandler) CreateUserHandler(ctx *gin.Context) {
@@ -58,6 +58,7 @@ func (h *UserHandler) CreateUserHandler(ctx *gin.Context) {
 		Name: req.Name,
 		CPF: req.CPF,
 		Balance: int(req.Balance * 100),
+		City: req.City,
 	}
 	err := storage.CreateUser(user, h.DB)
 	if err != nil {

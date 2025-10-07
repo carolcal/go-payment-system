@@ -1,9 +1,9 @@
 package storage
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
-	"database/sql"
 
 	"qr-payment/models"
 	"qr-payment/qrcode"
@@ -69,13 +69,13 @@ func GetAllPaymentsByUserId(user_type models.TypeUser, user_id string, db *sql.D
 	return allPayments, nil
 }
 
-func CreatePayment(p *models.PaymentData, db *sql.DB) error {
+func CreatePayment(u *models.UserData, p *models.PaymentData, db *sql.DB) error {
 	id := utils.GenerateID("pay")
 	p.ID = id
 	p.CreatedAt = time.Now()
 	p.ExpiresAt = time.Now().Add(15 * time.Minute)
 	p.Status = models.StatusPending
-	p.QRCodeData = qrcode.GenerateQRCode("92991514078", p.Amount, "Arthur Dent", "Terra")
+	p.QRCodeData = qrcode.GenerateQRCode(u.CPF, p.Amount, u.Name, u.City)
 
 	_, err := db.Exec("INSERT INTO payments VALUES(?, ?, ?, ?, ?, ?, ?, ?);", p.ID, p.CreatedAt, p.ExpiresAt, p.Amount, p.Status, p.ReceiverId, "", p.QRCodeData)
 	if err != nil {
@@ -85,36 +85,41 @@ func CreatePayment(p *models.PaymentData, db *sql.DB) error {
 	return nil
 }
 
-func MakePayment(id string, db *sql.DB) error {
-	var payment models.PaymentData
-
-	row := db.QueryRow(`SELECT * FROM payments WHERE id=?`, id)
-	err := utils.ScanPaymentRow(row, &payment)
+func ProcessPayment(user_id string, qr_code_data string, db *sql.DB) error {
+	qrdata, err := qrcode.ParseQrCodeData(qr_code_data)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return fmt.Errorf("pagamento não encontrado")
-		}
-		return fmt.Errorf("erro ao escanear pagamento: %w", err)
+		return err
 	}
 
-	switch payment.Status {
-	case models.StatusPaid:
-		return fmt.Errorf("pagamento já realizado")
-	case models.StatusFailed:
-		return fmt.Errorf("pagamento falhou anteriormente")
-	case models.StatusExpired:
-		return fmt.Errorf("pagamento expirado")
+	new_balance_payer, amount, err := utils.ValidateBalance(user_id, qrdata, db)
+	if err != nil {
+		return err
 	}
 
-	if time.Now().After(payment.ExpiresAt) {
-		_, err := db.Exec("UPDATE payments SET status=? WHERE id=?", models.StatusExpired, id)
-		if err != nil {
-			return fmt.Errorf("falha ao atualizar pagamento para status expirado: %w", err)
-		}
-		return fmt.Errorf("pagamento expirou")
+	receiver_id, receiver_balance, err := utils.ValidatePixKey(qrdata, db)
+	if err != nil {
+		return err
 	}
 
-	_, err = db.Exec("UPDATE payments SET status=? WHERE id=?", models.StatusPaid, id)
+	new_balance_receiver := receiver_balance + amount
+	
+	var payment *models.PaymentData
+	payment, err = utils.ValidatePaymentStatus(qr_code_data, db)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec("UPDATE users SET balance=? WHERE id=?", new_balance_payer, user_id)
+	if err != nil {
+		return fmt.Errorf("falha ao processar pagamento: %w", err)
+	}
+
+	_, err = db.Exec("UPDATE users SET balance=? WHERE id=?", new_balance_receiver, receiver_id)
+	if err != nil {
+		return fmt.Errorf("falha ao processar pagamento: %w", err)
+	}
+
+	_, err = db.Exec("UPDATE payments SET status=? WHERE id=?", models.StatusPaid, payment.ID)
 	if err != nil {
 		return fmt.Errorf("falha ao atualizar pagamento para status paga: %w", err)
 	}

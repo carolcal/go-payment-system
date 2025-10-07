@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 
 	"qr-payment/models"
 	"qr-payment/storage"
@@ -56,12 +57,19 @@ func (h *PaymentHandler) CreatePaymentHandler(ctx *gin.Context) {
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Printf("amount: %f, receiver: %s", req.Amount, req.ReceiverId)
+
+	user, err := storage.GetUserById(req.ReceiverId, h.DB)
+	if err != nil {
+		ctx.JSON(404, gin.H{"error": err.Error()})
+		return
+	}
 
 	payment := &models.PaymentData{
-		Amount: int(req.Amount * 100),
+		Amount:     int(req.Amount * 100),
 		ReceiverId: req.ReceiverId,
 	}
-	err := storage.CreatePayment(payment, h.DB)
+	err = storage.CreatePayment(user, payment, h.DB)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -69,9 +77,15 @@ func (h *PaymentHandler) CreatePaymentHandler(ctx *gin.Context) {
 	ctx.JSON(201, payment)
 }
 
-func (h *PaymentHandler) MakePaymentHandler(ctx *gin.Context) {
-	id := ctx.Param("id")
-	err := storage.MakePayment(id, h.DB)
+func (h *PaymentHandler) ProcessPaymentHandler(ctx *gin.Context) {
+	user_id := ctx.Param("user_id")
+	var req models.ProcessPaymentData
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := storage.ProcessPayment(user_id, req.QRCodeData, h.DB)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
