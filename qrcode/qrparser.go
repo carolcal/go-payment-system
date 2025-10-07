@@ -30,7 +30,7 @@ func ParseQrCodeData(qr_code_data string) (*models.QRCodeData, error) {
 			return nil, fmt.Errorf("qrcode inválido")
 		}
 	}
-	PrintQRCodeData(&data)
+	// PrintQRCodeData(&data)
 	return &data, nil
 }
 
