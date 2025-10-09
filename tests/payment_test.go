@@ -3,17 +3,16 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"testing"
 
-	"qr-payment/models"
+	"qr-payment/internal/core/models"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 var createdPayment models.PaymentData
-
-var createdPaymentsMap = make(map[string]*models.PaymentData)
 
 var users = make(map[string]*models.UserData)
 
@@ -129,7 +128,6 @@ func TestCreatePayment(t *testing.T) {
 	}
 
 	createdPayment = result
-	createdPaymentsMap[createdPayment.ID] = &createdPayment
 }
 
 func TestGetPaymentById(t *testing.T) {
@@ -195,7 +193,8 @@ func TestProcessPayment(t *testing.T) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("Expected status 200, got %d, %s", resp.StatusCode, resp.Body)
+		body, _ := io.ReadAll(resp.Body)
+		t.Fatalf("Expected status 200, got %d, %s", resp.StatusCode, body)
 	}
 }
 

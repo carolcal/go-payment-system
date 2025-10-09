@@ -7,7 +7,7 @@ import (
 
 	"database/sql"
 
-	"qr-payment/models"
+	"qr-payment/internal/core/models"
 )
 
 func ValidateBalance(user_id string, qrdata *models.QRCodeData, db *sql.DB) (int, int, error) {
