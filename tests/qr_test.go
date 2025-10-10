@@ -2,7 +2,7 @@ package tests
 
 import (
 	"fmt"
-	"qr-payment/qrcode"
+	"qr-payment/internal/qrcode"
 	"testing"
 )
 

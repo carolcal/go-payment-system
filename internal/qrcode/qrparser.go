@@ -2,7 +2,7 @@ package qrcode
 
 import (
 	"fmt"
-	"qr-payment/models"
+	"qr-payment/internal/core/models"
 	"strconv"
 )
 

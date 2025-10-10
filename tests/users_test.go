@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"qr-payment/models"
+	"qr-payment/internal/core/models"
 
 	_ "github.com/mattn/go-sqlite3"
 )

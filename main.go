@@ -1,11 +1,13 @@
 package main
 
 import (
-	"database/sql"
+	// "database/sql"
 	"fmt"
 
-	"qr-payment/handlers"
-	"qr-payment/storage"
+	"qr-payment/internal/core/services"
+	"qr-payment/internal/handlers"
+	"qr-payment/internal/infrastructure/database"
+	"qr-payment/internal/infrastructure/repository"
 
 	"github.com/gin-gonic/gin"
 
@@ -14,23 +16,28 @@ import (
 
 func main() {
 
-	db, err := storage.NewDatabase()
+	db, err := database.NewDatabase()
 	if err != nil {
 		fmt.Print(err)
 	}
 	defer db.Close()
 
+	urepository := repository.NewUserRepository(db)
+	uservices := services.NewUserService(urepository)
+	uhandler := handlers.NewUserHandlers(uservices)
+	prepository := repository.NewPaymentRepository(db)
+	pservices := services.NewPaymentService(prepository, uservices)
+	phandler := handlers.NewPaymentHandlers(pservices)
+
 	router := gin.Default()
-	setUpRoutes(router, db)
+	setUpRoutes(router, phandler, uhandler)
 	router.Run("0.0.0.0:8080")
 }
 
-func setUpRoutes(router *gin.Engine, db *sql.DB) {
-	phandler := &handlers.PaymentHandler{DB: db}
-	uhandler := &handlers.UserHandler{DB: db}
+func setUpRoutes(router *gin.Engine, phandler handlers.PaymentHandlers, uhandler handlers.UserHandlers) {
 
-	router.LoadHTMLGlob("templates/*.html")
-	router.Static("/static", "./static")
+	router.LoadHTMLGlob("web/templates/*.html")
+	router.Static("/web/static", "./web/static")
 
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.HTML(200, "index.html", gin.H{})

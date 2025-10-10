@@ -2,7 +2,7 @@ package utils
 
 import (
 	"database/sql"
-	"qr-payment/models"
+	"qr-payment/internal/core/models"
 )
 
 func ScanPaymentRow(row *sql.Row, payment *models.PaymentData) error {
