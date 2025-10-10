@@ -2,6 +2,7 @@ package qrcode
 
 import (
 	"fmt"
+	"strings"
 )
 
 func GetMerchantAccountInfo(pixKey string) string {
@@ -23,6 +24,7 @@ func GetTransationAmount(amount int) string {
 
 func GetMerchantName(name string) string {
 	maxLen := 25
+	name = removeAccents(strings.TrimSpace(name))
 	if len(name) > maxLen {
 		name = name[:maxLen]
 	}
@@ -31,6 +33,7 @@ func GetMerchantName(name string) string {
 
 func GetMerchantCity(city string) string {
 	maxLen := 15
+	city = removeAccents(strings.TrimSpace(city))
 	if len(city) > maxLen {
 		city = city[:maxLen]
 	}
@@ -43,7 +46,9 @@ func GetAdditionalDataField() string {
 }
 
 func GetCRC(data string) string {
+	fmt.Println("Data for CRC:", data)
 	dataForCRC := data + "6304"
+	fmt.Println("Data for CRC with placeholder:", dataForCRC)
 	crcValue := crc16([]byte(dataForCRC))
 	return fmt.Sprintf("6304%04X", crcValue&0xFFFF)
 }

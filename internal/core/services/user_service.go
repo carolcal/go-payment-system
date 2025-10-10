@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+	"regexp"
 
 	"qr-payment/internal/core/models"
 	"qr-payment/internal/infrastructure/repository"
@@ -45,12 +46,13 @@ func (s *userService) GetUserByNameAndCPF(ctx context.Context, name string, cpf 
 
 func (s *userService) CreateUser(ctx context.Context, cud *models.CreateUserData) (*models.UserData, error) {
 	id := utils.GenerateID("user")
+	re := regexp.MustCompile(`\D+`)
 	ud := &models.UserData{
 		ID:			id,
 		CreatedAt:	time.Now(),
 		UpdatedAt:	time.Now(),
 		Name:		cud.Name,
-		CPF:		cud.CPF,
+		CPF:		re.ReplaceAllString(cud.CPF, ""),
 		Balance:	int(cud.Balance * 100),
 		City:		cud.City,
 	}
