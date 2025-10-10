@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"qr-payment/internal/core/services"
-	"qr-payment/internal/delivery/handlers"
+	"qr-payment/internal/handlers"
 	"qr-payment/internal/infrastructure/database"
 	"qr-payment/internal/infrastructure/repository"
 

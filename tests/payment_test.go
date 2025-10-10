@@ -21,7 +21,6 @@ var receiverID string
 var payerID string
 
 func TestCreateUsers(t *testing.T){
-	//Add first user
 	payload := `{
 		"name": "Arthur Dent",
 		"cpf": "11111111111",
