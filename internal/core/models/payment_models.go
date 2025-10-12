@@ -19,7 +19,6 @@ const (
 	UserPayer    TypeUser = "payer_id"
 )
 
-// IsValidTypeUser verifica se a string é um TypeUser válido
 func IsValidTypeUser(userType string) (TypeUser, bool) {
 	switch userType {
 	case string(UserReceiver):

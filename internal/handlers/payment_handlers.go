@@ -1,9 +1,6 @@
 package handlers
 
 import (
-	// "database/sql"
-	// "fmt"
-
 	"qr-payment/internal/core/models"
 	"qr-payment/internal/core/services"
 

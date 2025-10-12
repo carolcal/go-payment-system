@@ -46,9 +46,7 @@ func GetAdditionalDataField() string {
 }
 
 func GetCRC(data string) string {
-	fmt.Println("Data for CRC:", data)
 	dataForCRC := data + "6304"
-	fmt.Println("Data for CRC with placeholder:", dataForCRC)
 	crcValue := crc16([]byte(dataForCRC))
 	return fmt.Sprintf("6304%04X", crcValue&0xFFFF)
 }
