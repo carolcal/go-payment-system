@@ -36,8 +36,9 @@ func main() {
 
 func setUpRoutes(router *gin.Engine, phandler handlers.PaymentHandlers, uhandler handlers.UserHandlers) {
 
-	router.LoadHTMLGlob("web/templates/*.html")
-	router.Static("/web/static", "./web/static")
+	router.LoadHTMLGlob("web/*.html")
+	router.Static("css", "./web/css")
+	router.Static("js", "./web/js")
 
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.HTML(200, "index.html", gin.H{})

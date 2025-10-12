@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>QR Payment System</title>
+	<link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+	<div id="container" class="center-all">
+		<h1>Welcome to CrappBank!</h1>
+		<div class="row">
+			<div class="col">
+				<h2>Users Section</h2>	
+				<hr>
+				<h3>Create New User (POST /user)</h3>
+				<form id="new-user-form">
+					<input type="text" id="new-user-name" placeholder="Name" required>
+					<input type="text" id="new-user-cpf" placeholder="CPF" required>
+					<input type="number" step="0.01" id="new-user-balance" placeholder="Balance" required>
+					<input type="text" id="new-user-city" placeholder="City" required>
+					<button type="submit" class="post-btn">POST /user</button>
+				</form>
+				<hr>
+				<div id="getUsersResult" hidden="true">
+					<h3>Get All Users (GET /users)</h3>
+					<div id="usersTable"></div>
+					<hr>
+				</div>
+				<div id="getUserResult" hidden="true">
+					<h3>Get User by ID (GET /user/:id)</h3>
+					<div id="userByIdInfo"></div>
+					<hr>
+				</div>
+				<div id="updateBalanceUser" hidden="true">
+					<h3>Deposit / Withdraw from <span id="selectedBalanceUserName"></span> Balance (PUT /user/:id/balance)</h3>
+					<div id="update-balance-form-section">
+						<form id="update-balance-form">
+							<input type="number" step="0.01" id="updateBalanceAmount" name="amount" placeholder="Amount" required>
+							<select id="updateBalanceType" name="type" required>
+								<option value="deposit">Deposit</option>
+								<option value="withdraw">Withdraw</option>
+							</select>
+							<button type="submit" class="put-btn">PUT /user/:id/balance</button>
+						</form>
+					</div>
+					<hr>
+				</div>
+			</div>
+			<div class="col border-l" id="accountInfo" hidden="true">
+				<h2><span id="selectedPaymentUserName"></span>'s Payment Section</h2>
+				<hr>
+				<h3>Create Payment (POST /payment)</h3>
+				<form id="payment-form-create">
+					<input type="number" step="0.01" id="createPayment" name="amount" placeholder="Valor" required>
+					<button type="submit" class="post-btn">POST /payment</button>
+				</form>
+				<div id="qrcodeSection" hidden="true">
+					<div id="qrcode" class="center-all"></div>
+				</div>
+				<hr>
+				<h3>Make Payment (POST /payment)</h3>
+				<form id="payment-form-pay">
+					<input type="text" id="qrcodedata" name="qrcodedata" placeholder="Paste QR Code" required>
+					<button type="submit" class="post-btn">POST /payment/:id/pay</button>
+				</form>
+				<hr>
+				<div id="accountReceiveHistory"></div>
+				<div id="accountPayHistory"></div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+	<script type="module" src="./js/main.js"></script>
+</body>
+
+</html>

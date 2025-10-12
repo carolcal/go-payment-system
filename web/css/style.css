@@ -2,10 +2,6 @@ html{
   font-family: Arial, Helvetica, sans-serif
 }
 
-h3 {
-  margin-bottom: 50px;
-}
-
 .row {
   display: flex;
 }
@@ -47,11 +43,12 @@ td{
 
 button {
   padding: 10px;
-  background-color: rgb(73, 173, 231);
+  background-color: rgb(77, 77, 77);
   border-radius: 5px;
   border: none;
   color: white;
   font-weight: 800;
+  margin-bottom: 5px;
 }
 
 button:active {
@@ -59,8 +56,16 @@ button:active {
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1); 
 }
 
-.pay-btn {
+.get-btn {
   background-color: rgb(87, 179, 87);
+}
+
+.post-btn {
+  background-color: rgb(233, 170, 94);
+}
+
+.put-btn {
+  background-color: rgb(73, 173, 231);
 }
 
 .del-btn {
@@ -73,6 +78,13 @@ input {
   border: 1px solid #ccc;
 }
 
+select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: white;
+}
+
 .center-all {
   display: flex;
   flex-direction: column;
@@ -83,4 +95,12 @@ input {
 
 #qrcode {
   margin: 30px 0;
+}
+
+ul {
+  text-align: left;
+}
+
+hr {
+  color: #ccc;
 }

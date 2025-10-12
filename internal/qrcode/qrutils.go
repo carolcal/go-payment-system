@@ -3,6 +3,11 @@ package qrcode
 import (
 	"fmt"
 	"time"
+    "unicode"
+
+    "golang.org/x/text/runes"
+    "golang.org/x/text/transform"
+    "golang.org/x/text/unicode/norm"
 )
 
 func TLV(id string, value string) string {
@@ -29,4 +34,17 @@ func crc16(data []byte) uint16 {
         }
     }
     return crc & 0xFFFF
+}
+
+func removeAccents(s string) string {
+    t := transform.Chain(
+        norm.NFD,
+        runes.Remove(runes.In(unicode.Mn)),
+        norm.NFC,
+    )
+    result, _, err := transform.String(t, s)
+    if err != nil {
+        return s
+    }
+    return result
 }

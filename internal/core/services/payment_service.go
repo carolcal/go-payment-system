@@ -140,6 +140,11 @@ func (s *paymentService) ProcessPayment(ctx context.Context, payer_id string, qr
         return err
     }
 
+	err = s.repo.UpdatePaymentPayerId(payment.ID, payer_id)
+	if err != nil {
+		return err
+	}
+
     return s.repo.UpdatePaymentStatus(payment.ID, models.StatusPaid)
 }
 
