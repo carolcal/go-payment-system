@@ -16,6 +16,7 @@ type PaymentRepository interface {
 	FindAllByUserId(user_type models.TypeUser, user_id string) (map[string]*models.PaymentData, error)
 	Create(u *models.UserData, p *models.PaymentData) error
 	UpdatePaymentStatus(id string, status models.PaymentStatus) error
+	UpdatePaymentPayerId(id string, payer_id string) error
 	Delete(id string) error
 }
 
@@ -119,6 +120,15 @@ func (p *paymentRepository) UpdatePaymentStatus(id string, status models.Payment
 	_, err := p.db.Exec("UPDATE payments SET status=? WHERE id=?", status, id)
 	if err != nil {
 		return fmt.Errorf("falha ao atualizar pagamento para status %s: %w", status, err)
+	}
+
+	return nil
+}
+
+func (p *paymentRepository) UpdatePaymentPayerId(id string, payer_id string) error {
+	_, err := p.db.Exec("UPDATE payments SET payer_id=? WHERE id=?", payer_id, id)
+	if err != nil {
+		return fmt.Errorf("falha ao atualizar pagamento com payer_id %s: %w", payer_id, err)
 	}
 
 	return nil
