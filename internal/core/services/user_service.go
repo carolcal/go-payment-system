@@ -65,9 +65,8 @@ func calculateDigit(cleanCPF string, digitIndex int) error {
 	} else {
 		numCheck = 11 - mod
 	}
-	fmt.Println(`numCheck :`, numCheck)
 	if numCheck != int(cleanCPF[digitIndex] - '0') {
-		return fmt.Errorf("inválid CPF number")
+		return fmt.Errorf("invalid CPF number")
 	}
 	return nil
 }
@@ -79,7 +78,7 @@ func verifyDigitsEquals(cleanCPF string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("inválid CPF number")
+	return fmt.Errorf("invalid CPF number")
 }
 
 func (s *userService) ValidateCPF(cpf string) (string, error) {
