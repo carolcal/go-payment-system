@@ -39,9 +39,9 @@ func (p *paymentRepository) FindById(id string) (*models.PaymentData, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("pagamento não encontrado")
+			return nil, &models.Err{Op: "PaymentRepository.FindById", Status: models.NotFound, Msg: "Payment Not Found."}
 		}
-		return nil, fmt.Errorf("erro ao escanear pagamento: %w", err)
+		return nil, &models.Err{Op: "PaymentRepository.FindById", Status: models.Dependency, Msg: "Error when scanning payment.", Err: err}
 	}
 
 	return &payment, nil
@@ -55,9 +55,9 @@ func (p *paymentRepository) FindByQRCodeData(qr_code_data string) (*models.Payme
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("pagamento não encontrado")
+			return nil, &models.Err{Op: "PaymentRepository.FindByQRCodeData", Status: models.NotFound, Msg: "Payment Not Found."}
 		}
-		return nil, fmt.Errorf("erro ao escanear pagamento: %w", err)
+		return nil, &models.Err{Op: "PaymentRepository.FindByQRCodeData", Status: models.Dependency, Msg: "Error when scanning payment.", Err: err}
 	}
 
 	return &payment, nil
@@ -69,7 +69,7 @@ func (p *paymentRepository) FindAll() (map[string]*models.PaymentData, error) {
 
 	rows, err := p.db.Query(`SELECT * FROM payments`)
 	if err != nil {
-		return nil, err
+		return nil, &models.Err{Op: "PaymentRepository.FindAll", Status: models.Dependency, Msg: "Error executing payment query.", Err: err}
 	}
 	defer rows.Close()
 
@@ -77,7 +77,7 @@ func (p *paymentRepository) FindAll() (map[string]*models.PaymentData, error) {
 		var payment models.PaymentData
 		err := utils.ScanPaymentRows(rows, &payment)
 		if err != nil {
-			return nil, fmt.Errorf("erro ao escanear pagamento: %w", err)
+			return nil, &models.Err{Op: "PaymentRepository.FindAll", Status: models.Dependency, Msg: "Error when scanning payment.", Err: err}
 		}
 		allPayments[payment.ID] = &payment
 	}
@@ -91,7 +91,7 @@ func (p *paymentRepository) FindAllByUserId(user_type models.TypeUser, user_id s
 	query := fmt.Sprintf(`SELECT * FROM payments WHERE %s=? `, user_type)
 	rows, err := p.db.Query(query, user_id)
 	if err != nil {
-		return nil, err
+		return nil, &models.Err{Op: "PaymentRepository.FindAllByUserId", Status: models.Dependency, Msg: "Error executing payment query.", Err: err}
 	}
 	defer rows.Close()
 
@@ -99,7 +99,7 @@ func (p *paymentRepository) FindAllByUserId(user_type models.TypeUser, user_id s
 		var payment models.PaymentData
 		err := utils.ScanPaymentRows(rows, &payment)
 		if err != nil {
-			return nil, fmt.Errorf("erro ao escanear pagamento: %w", err)
+			return nil, &models.Err{Op: "PaymentRepository.FindAllByUserId", Status: models.Dependency, Msg: "Error when scanning payment.", Err: err}
 		}
 		allPayments[payment.ID] = &payment
 	}
@@ -110,7 +110,7 @@ func (p *paymentRepository) FindAllByUserId(user_type models.TypeUser, user_id s
 func (p *paymentRepository) Create(u *models.UserData, pd *models.PaymentData) error {
 	_, err := p.db.Exec("INSERT INTO payments VALUES(?, ?, ?, ?, ?, ?, ?, ?);", pd.ID, pd.CreatedAt, pd.ExpiresAt, pd.Amount, pd.Status, pd.ReceiverId, "", pd.QRCodeData)
 	if err != nil {
-		return fmt.Errorf("falha ao criar novo pagamento")
+		return &models.Err{Op: "PaymentRepository.Create", Status: models.Dependency, Msg: "Failed to create new payment.", Err: err}
 	}
 
 	return nil
@@ -119,7 +119,7 @@ func (p *paymentRepository) Create(u *models.UserData, pd *models.PaymentData) e
 func (p *paymentRepository) UpdatePaymentStatus(id string, status models.PaymentStatus) error {
 	_, err := p.db.Exec("UPDATE payments SET status=? WHERE id=?", status, id)
 	if err != nil {
-		return fmt.Errorf("falha ao atualizar pagamento para status %s: %w", status, err)
+		return &models.Err{Op: "PaymentRepository.UpdatePaymentStatus", Status: models.Dependency, Msg: "Fail to update payment.", Err: err}
 	}
 
 	return nil
@@ -128,7 +128,7 @@ func (p *paymentRepository) UpdatePaymentStatus(id string, status models.Payment
 func (p *paymentRepository) UpdatePaymentPayerId(id string, payer_id string) error {
 	_, err := p.db.Exec("UPDATE payments SET payer_id=? WHERE id=?", payer_id, id)
 	if err != nil {
-		return fmt.Errorf("falha ao atualizar pagamento com payer_id %s: %w", payer_id, err)
+		return &models.Err{Op: "PaymentRepository.UpdatePaymentPayerId", Status: models.Dependency, Msg: "Fail to update payment.", Err: err}
 	}
 
 	return nil
@@ -137,7 +137,7 @@ func (p *paymentRepository) UpdatePaymentPayerId(id string, payer_id string) err
 func (p *paymentRepository) Delete(id string) error {
 	_, err := p.db.Exec("DELETE FROM payments WHERE id=?", id)
 	if err != nil {
-		return fmt.Errorf("falha ao deletar pagamento: %w", err)
+		return &models.Err{Op: "PaymentRepository.Delete", Status: models.Dependency, Msg: "Fail to delete payment.", Err: err}
 	}
 
 	return nil

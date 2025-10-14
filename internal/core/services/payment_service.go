@@ -2,12 +2,10 @@ package services
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
-	"strconv"
 	"time"
 
 	"qr-payment/internal/core/models"
+	"qr-payment/internal/core/validators"
 	"qr-payment/internal/infrastructure/repository"
 	"qr-payment/internal/qrcode"
 	"qr-payment/internal/utils"
@@ -19,19 +17,20 @@ type PaymentService interface {
 	GetAllPayments(ctx context.Context) (map[string]*models.PaymentData, error)
 	GetAllPaymentsByUserId(ctx context.Context, user_type_param string, user_id string) (map[string]*models.PaymentData, error)
     CreatePayment(ctx context.Context, req *models.CreatePaymentData) (*models.PaymentData, error)
-    ValidatePaymentStatus(payment *models.PaymentData) error
-    ProcessPayment(ctx context.Context, user_id string, qr_code_data string) error
+    ProcessPayment(ctx context.Context, user_id string, ppd *models.ProcessPaymentData) error
 	RemovePayment(ctx context.Context, id string) error
 }
 
 type paymentService struct {
     repo repository.PaymentRepository
+	val validators.PaymentValidator
     userService UserService
 }
 
-func NewPaymentService(repo repository.PaymentRepository, userService UserService) PaymentService {
+func NewPaymentService(repo repository.PaymentRepository, val validators.PaymentValidator, userService UserService) PaymentService {
     return &paymentService{
         repo: repo,
+		val: val,
         userService: userService,
     }
 }
@@ -52,7 +51,7 @@ func (s *paymentService) GetAllPayments(ctx context.Context) (map[string]*models
 func (s *paymentService) GetAllPaymentsByUserId(ctx context.Context, user_type_param string, user_id string) (map[string]*models.PaymentData, error) {
     user_type, isValid := models.IsValidTypeUser(user_type_param)
 	if !isValid {
-        return nil, fmt.Errorf("user_type deve ser 'receiver_id' ou 'payer_id'")
+		return nil, &models.Err{Op: "PaymentService.GetAllPaymentsByUserId", Status: models.Invalid, Msg: "'user_type' must be 'receiver_id' or 'payer_id'."}
 	}
     return s.repo.FindAllByUserId(user_type, user_id)
 }
@@ -64,12 +63,19 @@ func (s *paymentService) CreatePayment(ctx context.Context, cpd *models.CreatePa
 	}
 
     id := utils.GenerateID("pay")
+	amount := 0
+	if cpd.Amount != nil {
+		if *cpd.Amount <= 0 {
+			return nil, &models.Err{Op: "PaymentService.CreatePayment", Status: models.Invalid, Msg: "Amount must be a positive number."}
+		}
+		amount = int(*cpd.Amount * 100)
+	}
     
 	pd := &models.PaymentData{
 		ID:         id,
 		CreatedAt:  time.Now(),
 		ExpiresAt:  time.Now().Add(15 * time.Minute),
-		Amount:     int(cpd.Amount * 100),
+		Amount:     amount,
 		ReceiverId: cpd.ReceiverId,
 		Status:     models.StatusPending,
 	}
@@ -82,50 +88,27 @@ func (s *paymentService) CreatePayment(ctx context.Context, cpd *models.CreatePa
     return pd, nil
 }
 
-func (s *paymentService) ValidatePaymentStatus(payment *models.PaymentData) error {
-
-	switch payment.Status {
-	case models.StatusPaid:
-		return fmt.Errorf("pagamento já realizado")
-	case models.StatusFailed:
-		return fmt.Errorf("pagamento falhou anteriormente")
-	case models.StatusExpired:
-		return fmt.Errorf("pagamento expirado")
-	}
-
-	if time.Now().After(payment.ExpiresAt) {
-		err := s.repo.UpdatePaymentStatus(payment.ID, models.StatusExpired)
-		if err != nil {
-			return fmt.Errorf("pagamento expirou: falha ao atualizar pagamento para status expirado: %w", err)
-		}
-		return fmt.Errorf("pagamento expirou")
-	}
-
-	return nil
-
-}
-
-func (s *paymentService) ProcessPayment(ctx context.Context, payer_id string, qr_code_data string) error {
-    qrdata, err := qrcode.ParseQrCodeData(qr_code_data)
+func (s *paymentService) ProcessPayment(ctx context.Context, payer_id string, ppd *models.ProcessPaymentData) error {
+    qrdata, err := qrcode.ParseQrCodeData(ppd.QRCodeData)
 	if err != nil {
 		return err
 	}
 
-    amount, err := strconv.ParseFloat(qrdata.TransactionAmount, 64)
-    if err != nil || amount <= 0 {
-		return fmt.Errorf("invalid transaction amount")
+	amount, err := s.val.ValidatePaymentAmount(qrdata, ppd)
+	if err != nil {
+		return err
 	}
 
     receiver, err := s.userService.GetUserByNameAndCPF(ctx, qrdata.MerchantName, qrdata.PixKey)
 	if err != nil {
 		return err
 	}
-	
-	payment, err := s.GetPaymentByQRCodeData(ctx, qr_code_data)
+
+	payment, err := s.GetPaymentByQRCodeData(ctx, ppd.QRCodeData)
     if err != nil {
         return err
     }
-	err = s.ValidatePaymentStatus(payment)
+	err = s.val.ValidatePaymentStatus(payment)
 	if err != nil {
 		return err
 	}
@@ -151,10 +134,7 @@ func (s *paymentService) ProcessPayment(ctx context.Context, payer_id string, qr
 func (s *paymentService) RemovePayment(ctx context.Context, id string) error {
     _, err := s.repo.FindById(id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return fmt.Errorf("pagamento não encontrado")
-		}
-		return fmt.Errorf("erro ao escanear pagamento: %w", err)
+		return err
 	}
     return s.repo.Delete(id)
 }

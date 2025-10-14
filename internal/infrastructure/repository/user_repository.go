@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"database/sql"
 
 	"qr-payment/internal/core/models"
@@ -35,9 +34,9 @@ func (u *userRepository) FindById(id string) (*models.UserData, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("usuário não encontrado")
+			return nil, &models.Err{Op: "UserRepository.FindById", Status: models.NotFound, Msg: "User Not Found."}
 		}
-		return nil, fmt.Errorf("erro ao escanear usuário2: %w", err)
+		return nil, &models.Err{Op: "UserRepository.FindById", Status: models.Dependency, Msg: "Error when scanning payment.", Err: err}
 	}
 
 	return &user, nil
@@ -48,7 +47,7 @@ func (u *userRepository) FindAll() (map[string]*models.UserData, error) {
 
 	rows, err := u.db.Query(`SELECT * FROM users`)
 	if err != nil {
-		return nil, err
+		return nil, &models.Err{Op: "UserRepository.FindAll", Status: models.Dependency, Msg: "Error executing user query.", Err: err}
 	}
 	defer rows.Close()
 
@@ -56,12 +55,12 @@ func (u *userRepository) FindAll() (map[string]*models.UserData, error) {
 		usr := new(models.UserData)
 		err := utils.ScanUserRows(rows, usr)
 		if err != nil {
-			return nil, fmt.Errorf("erro ao escanear usuário: %w", err)
+			return nil, &models.Err{Op: "UserRepository.FindAll", Status: models.Dependency, Msg: "Error when scanning payment.", Err: err}
 		}
 		allUsers[usr.ID] = usr
 	}
 	if err := rows.Err(); err != nil {
-        return nil, err
+		return nil, &models.Err{Op: "UserRepository.FindAll", Status: models.Dependency, Msg: "Error when iterating users", Err: err}
     }
 
 	return allUsers, nil
@@ -75,9 +74,9 @@ func (u *userRepository) FindByNameAndCPF(name string, cpf string) (*models.User
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("usuário não encontrado")
+			return nil, &models.Err{Op: "UserRepository.FindByNameAndCPF", Status: models.NotFound, Msg: "User Not Found."}
 		}
-		return nil, fmt.Errorf("erro ao escanear usuário3: %w", err)
+		return nil, &models.Err{Op: "UserRepository.FindByNameAndCPF", Status: models.Dependency, Msg: "Error when scanning payment.", Err: err}
 	}
 
 	return &user, nil
@@ -86,7 +85,7 @@ func (u *userRepository) FindByNameAndCPF(name string, cpf string) (*models.User
 func (u *userRepository) Create(ud *models.UserData) error {
 	_, err := u.db.Exec("INSERT INTO users VALUES(?, ?, ?, ?, ?, ?, ?);", ud.ID, ud.CreatedAt, ud.UpdatedAt, ud.Name, ud.CPF, ud.Balance, ud.City)
 	if (err != nil) {
-		return fmt.Errorf("falha ao criar novo usuário")
+		return &models.Err{Op: "UserRepository.Create", Status: models.Dependency, Msg: "Fail to create new user.", Err: err}
 	}
 
 	return nil
@@ -95,7 +94,7 @@ func (u *userRepository) Create(ud *models.UserData) error {
 func (u *userRepository) UpdateBalance(id string, newBalance int) error {
 	_, err := u.db.Exec("UPDATE users SET balance=? WHERE id=?", newBalance, id)
 	if err != nil {
-		return fmt.Errorf("falha ao atualizar usuário para saldo %d: %w", newBalance, err)
+		return &models.Err{Op: "UserRepository.UpdateBalance", Status: models.Dependency, Msg: "Fail to update user balance.", Err: err}
 	}
 
 	return nil
@@ -104,7 +103,7 @@ func (u *userRepository) UpdateBalance(id string, newBalance int) error {
 func (u *userRepository) Delete(id string) error {
 	_, err := u.db.Exec("DELETE FROM users WHERE id=?", id)
 	if err != nil {
-		return fmt.Errorf("falha ao deletar usuário: %w", err)
+		return &models.Err{Op: "UserRepository.Delete", Status: models.Dependency, Msg: "Fail to delete user.", Err: err}
 	}
 
 	return nil

@@ -2,9 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
+
+	"qr-payment/internal/core/models"
 )
 
 const usersTable string = `
@@ -37,15 +38,30 @@ func NewDatabase() (*sql.DB, error){
 	db, err := sql.Open("sqlite3", file)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
+		return nil, &models.Err{
+			Op: "NewDatabase", 
+			Status: models.Dependency, 
+			Msg: "Failed to open database.", 
+			Err: err,
+		}
     }
 
 	if _, err := db.Exec(usersTable); err != nil {
-		return nil, fmt.Errorf("failed to execute schema creation: %w", err)
+		return nil, &models.Err{
+			Op: "NewDatabase", 
+			Status: models.Dependency,
+			Msg: "Failed to execute users schema creation.", 
+			Err: err,
+		}
 	}
 
 	if _, err := db.Exec(paymentTable); err != nil {
-		return nil, fmt.Errorf("failed to execute schema creation: %w", err)
+		return nil, &models.Err{
+			Op: "NewDatabase", 
+			Status: models.Dependency, 
+			Msg: "Failed to execute payments schema creation.", 
+			Err: err,
+		}
 	}
 
 	return db, nil

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"qr-payment/internal/core/services"
+	"qr-payment/internal/core/validators"
 	"qr-payment/internal/handlers"
 	"qr-payment/internal/infrastructure/database"
 	"qr-payment/internal/infrastructure/repository"
@@ -28,10 +29,12 @@ func main() {
     }()
 
 	urepository := repository.NewUserRepository(db)
-	uservices := services.NewUserService(urepository)
+	uvalidator := validators.NewUserValidator(urepository)
+	uservices := services.NewUserService(urepository, uvalidator)
 	uhandler := handlers.NewUserHandlers(uservices)
 	prepository := repository.NewPaymentRepository(db)
-	pservices := services.NewPaymentService(prepository, uservices)
+	pvalidator := validators.NewPaymentValidator(prepository)
+	pservices := services.NewPaymentService(prepository, pvalidator, uservices)
 	phandler := handlers.NewPaymentHandlers(pservices)
 
 	router := gin.Default()
