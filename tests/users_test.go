@@ -26,7 +26,6 @@ func TestCreateInvalidUser(t *testing.T) {
 	}`
 	url := router + "user"
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(payload)))
-	//must return error be status 400
 	if err != nil {
 		t.Fatalf("Returned error: %v", err)
 	}

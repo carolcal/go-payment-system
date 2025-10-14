@@ -22,5 +22,5 @@ type CreateUserData struct {
 }
 
 type UpdateBalanceData struct {
-	Diff		float64		`json:"diff"`
+	Diff		float64		`json:"diff" binding:"required"`
 }

@@ -48,7 +48,6 @@ func TestCreateUsers(t *testing.T){
 	users[result1.ID] = &result1
 	receiverID = result1.ID
 
-	//Add second user
 	payload = `{
 		"name": "Ford Prefect",
 		"cpf": "55651804064",
