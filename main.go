@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"qr-payment/internal/core/services"
@@ -24,7 +23,7 @@ func main() {
 	}
 	defer func() {
         if cerr := db.Close(); cerr != nil {
-            fmt.Printf("database close error: %v\n", cerr)
+            log.Fatalf("database close error: %v\n", cerr)
         }
     }()
 
