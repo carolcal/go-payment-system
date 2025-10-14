@@ -3,7 +3,6 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -52,7 +51,6 @@ func TestCreateValidUser(t *testing.T){
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
-		fmt.Println(resp)
 		t.Fatalf("Expected status code 201, got %d", resp.StatusCode)
 	}
 

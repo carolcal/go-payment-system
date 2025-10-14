@@ -18,6 +18,7 @@ type PaymentService interface {
 	GetAllPaymentsByUserId(ctx context.Context, user_type_param string, user_id string) (map[string]*models.PaymentData, error)
     CreatePayment(ctx context.Context, req *models.CreatePaymentData) (*models.PaymentData, error)
     ProcessPayment(ctx context.Context, user_id string, ppd *models.ProcessPaymentData) error
+	completePayment(ctx context.Context, payment_id string, payer_id string, receiver_id string, amount float64) error
 	RemovePayment(ctx context.Context, id string) error
 }
 
@@ -89,52 +90,61 @@ func (s *paymentService) CreatePayment(ctx context.Context, cpd *models.CreatePa
 }
 
 func (s *paymentService) ProcessPayment(ctx context.Context, payer_id string, ppd *models.ProcessPaymentData) error {
-    qrdata, err := qrcode.ParseQrCodeData(ppd.QRCodeData)
+    payment, err := s.GetPaymentByQRCodeData(ctx, ppd.QRCodeData)
+    if err != nil {
+        return err
+    }
+
+	qrdata, err := qrcode.ParseQrCodeData(ppd.QRCodeData)
 	if err != nil {
+		s.repo.UpdatePaymentStatus(payment.ID, models.StatusFailed)
 		return err
 	}
 
-	amount, err := s.val.ValidatePaymentAmount(qrdata, ppd)
+	amount, err := s.val.ValidatePayment(qrdata, ppd, payment)
 	if err != nil {
 		return err
 	}
 
     receiver, err := s.userService.GetUserByNameAndCPF(ctx, qrdata.MerchantName, qrdata.PixKey)
 	if err != nil {
+		s.repo.UpdatePaymentStatus(payment.ID, models.StatusFailed)
 		return err
 	}
 
-	payment, err := s.GetPaymentByQRCodeData(ctx, ppd.QRCodeData)
+    return s.completePayment(ctx, payment.ID, payer_id, receiver.ID, amount)
+}
+
+func (s *paymentService) completePayment(ctx context.Context, payment_id string, payer_id string, receiver_id string, amount float64) error {
+	err := s.userService.UpdateBalance(ctx, payer_id, models.UpdateBalanceData{Diff: -amount})
     if err != nil {
+		s.repo.UpdatePaymentStatus(payment_id, models.StatusFailed)
         return err
     }
-	err = s.val.ValidatePaymentStatus(payment)
+
+    err = s.userService.UpdateBalance(ctx, receiver_id, models.UpdateBalanceData{Diff: amount})
+    if err != nil {
+		s.userService.UpdateBalance(ctx, payer_id, models.UpdateBalanceData{Diff: amount})
+		s.repo.UpdatePaymentStatus(payment_id, models.StatusFailed)
+        return err
+    }
+
+	err = s.repo.UpdatePaymentPayerId(payment_id, payer_id)
 	if err != nil {
 		return err
 	}
 
-    err = s.userService.UpdateBalance(ctx, payer_id, models.UpdateBalanceData{Diff: -amount})
-    if err != nil {
-        return err
-    }
+    return s.repo.UpdatePaymentStatus(payment_id, models.StatusPaid)
 
-    err = s.userService.UpdateBalance(ctx, receiver.ID, models.UpdateBalanceData{Diff: amount})
-    if err != nil {
-        return err
-    }
-
-	err = s.repo.UpdatePaymentPayerId(payment.ID, payer_id)
-	if err != nil {
-		return err
-	}
-
-    return s.repo.UpdatePaymentStatus(payment.ID, models.StatusPaid)
 }
 
 func (s *paymentService) RemovePayment(ctx context.Context, id string) error {
-    _, err := s.repo.FindById(id)
+    payment, err := s.repo.FindById(id)
 	if err != nil {
 		return err
+	}
+	if payment.Status == models.StatusPaid {
+		return &models.Err{Op: "PaymentService.RemovePayment", Status: models.Invalid, Msg: "Paid payments cannot be removed."}
 	}
     return s.repo.Delete(id)
 }

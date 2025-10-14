@@ -23,7 +23,6 @@ export async function createNewUser(event) {
 			getAllUsers();
 		} else {
 			const error = await response.json();
-			console.log(error);
 			alert(`Error: ${error.error}`);
 		}
 	} catch (err) {

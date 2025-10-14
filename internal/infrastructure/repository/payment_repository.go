@@ -17,6 +17,7 @@ type PaymentRepository interface {
 	Create(u *models.UserData, p *models.PaymentData) error
 	UpdatePaymentStatus(id string, status models.PaymentStatus) error
 	UpdatePaymentPayerId(id string, payer_id string) error
+	UpdatePaymentAmount(id string, amount int) error
 	Delete(id string) error
 }
 
@@ -129,6 +130,15 @@ func (p *paymentRepository) UpdatePaymentPayerId(id string, payer_id string) err
 	_, err := p.db.Exec("UPDATE payments SET payer_id=? WHERE id=?", payer_id, id)
 	if err != nil {
 		return &models.Err{Op: "PaymentRepository.UpdatePaymentPayerId", Status: models.Dependency, Msg: "Fail to update payment.", Err: err}
+	}
+
+	return nil
+}
+
+func (p *paymentRepository) UpdatePaymentAmount(id string, amount int) error {
+	_, err := p.db.Exec("UPDATE payments SET amount=? WHERE id=?", amount, id)
+	if err != nil {
+		return &models.Err{Op: "PaymentRepository.UpdatePaymentAmount", Status: models.Dependency, Msg: "Fail to update payment.", Err: err}
 	}
 
 	return nil
