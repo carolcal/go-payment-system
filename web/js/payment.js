@@ -41,7 +41,6 @@ export async function createPayment(event) {
 }
 
 export async function getAllPayments(user_id, user_type) {
-	console.log("get payments " + user_type)
 	try {
 		const response = await fetch(`/payments/${user_id}/${user_type}`, {
 			method: 'GET',
@@ -49,7 +48,6 @@ export async function getAllPayments(user_id, user_type) {
 
 		if (response.ok) {
 			const data = await response.json();
-			console.log(data)
 			if (Object.keys(data).length != 0) {
 				createHistoryTable(data, user_type)
 			} else {
@@ -72,7 +70,8 @@ export async function getAllPayments(user_id, user_type) {
 export async function payPayment(event) {
 	event.preventDefault();
 
-	const qrcodedata = document.getElementById('qrcodedata').value;
+	let qrcodedata = document.getElementById('qrcodedata');
+	let amount = document.getElementById('payAmount');
 	if (!qrcodedata) {
 		alert('Por favor, insira os dados do QR Code.');
 		return;
@@ -83,12 +82,18 @@ export async function payPayment(event) {
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ qr_code_data: qrcodedata })
+			body: amount.value
+				? JSON.stringify({ amount: parseFloat(amount.value), qr_code_data: qrcodedata.value })
+				: JSON.stringify({ qr_code_data: qrcodedata.value })
 		})
 		if (response.ok) {
 			alert("Pagamento feito com sucesso!")
 		} else {
 			const error = await response.json();
+			if (error.op === "ValidatePaymentAmount" && error.status === 412) {
+				amount.hidden = false;
+				return ;
+			}
 			alert(`${error.error}`);
 		}
 	} catch (err) {
@@ -99,7 +104,10 @@ export async function payPayment(event) {
 		getAllPayments(getSelectedUser().id, "receiver_id");
 		getAllPayments(getSelectedUser().id, "payer_id");
 		getAllUsers();
-        document.getElementById('qrcodedata').value = '';
+        qrcodedata.value = '';
+		amount.value = '';
+		amount.hidden = true;
+
 	}
 }
 

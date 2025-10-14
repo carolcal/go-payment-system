@@ -220,7 +220,7 @@ func TestGetPaymentByIdStatusPaid(t *testing.T) {
 	}
 }
 
-func TestRemovePayment(t *testing.T) {
+func TestInvalidRemovePayment(t *testing.T) {
 	url := router + "payment/" + createdPayment.ID
 
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
@@ -234,12 +234,53 @@ func TestRemovePayment(t *testing.T) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("Expected status code 400, got %d", resp.StatusCode)
+	}
+}
+
+func TestValidRemovePayment(t *testing.T) {
+	payload := `{
+		"amount": 100.00,
+		"receiver_id": "` + receiverID + `"
+	}`
+	url := router + "payment"
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(payload)))
+	if err != nil {
+		t.Fatalf("Returned error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		t.Fatalf("Expected status code 201, got %d: %s", resp.StatusCode, resp.Body)
+	}
+
+	var result models.PaymentData
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
+
+	url = router + "payment/" + result.ID
+
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		t.Fatalf("Failed to create DELETE request: %v", err)
+	}
+
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Returned error: %v", err)
+	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Expected status code 200, got %d", resp.StatusCode)
 	}
 }
 
-func TestGetEmptyPayments(t *testing.T) {
+func TestGetOnePayment(t *testing.T) {
 	url := router + "payments"
 
 	resp, err := http.Get(url)
@@ -258,7 +299,7 @@ func TestGetEmptyPayments(t *testing.T) {
 		t.Fatalf("Failed to decode responde: %v", err)
 	}
 
-	if len(result) != 0 {
+	if len(result) != 1 {
 		t.Errorf("Expected map with length 0, got: %d", len(result))
 	}
 }

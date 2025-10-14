@@ -51,6 +51,7 @@ The API exposes the following **endpoints**:
    }
   ```
   - If you don't provide `amount`, it creates a QR code payment without a fixed value. In that case, you must provide an `amount` when processing the payment (see endpoint below).
+  - To make it simple, it uses the user's cpf as pix key.
 * **POST `/:id/pay`** → Processes a payment by transferring money from one account to another and marking it as `paid`.
   - **Body:**
   ```json
@@ -91,7 +92,8 @@ By default, the server will start on **port 8080** and will create database in t
 You can interact with the project in two ways:
 
 * **Frontend:**
-  Access [http://localhost:8080](http://localhost:8080) in your browser to interact with the api.
+  The frontend part is very simple and was created only to make testing the API easier.
+  Access [http://localhost:8080](http://localhost:8080) in your browser to interact with it.
 
 * **API:**
   Use Postman, `curl`, or any HTTP client to test the API directly.
