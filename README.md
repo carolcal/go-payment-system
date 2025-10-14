@@ -15,53 +15,53 @@ The API exposes the following **endpoints**:
 #### /user
 * **GET `/:id`** → Returns user filtered by parameter `id`.
 * **POST `/`** → Creates a new user.
-- **Body:**
-```json
-{
-  "name": "string(required)", 
-  "cpf": "string(required)", 
-  "balance": "float,(required)",
-  "city": "string(required)"
-}
-```
+  - **Body:**
+  ```json
+  {
+    "name": "string(required)", 
+    "cpf": "string(required)", 
+    "balance": "float,(required)",
+    "city": "string(required)"
+  }
+  ```
 * **PUT `/:id/balance`** → Updates user's balance.
-- **Body:**
-```json
-{
-  "diff": "float(required)"
-}
-```
-- A positive value deposits money into the account, and a negative value withdraws from it.
+  - **Body:**
+  ```json
+  {
+    "diff": "float(required)"
+  }
+  ```
+  - A positive value deposits money into the account, and a negative value withdraws from it.
 * **DELETE `/:id`** → Deletes user by the given parameter `id`.
 
 #### /payments
 * **GET `/`** → Returns all payments.
 * **GET `/:user_id/:user_type`** → Returns all payments for the given `user_id` and `user_type` (`receiver_id` or `payer_id`)
-- Passing `receiver_id` returns received payments (deposits).
-- Passing `payer_id` returns sent payments (withdrawals).
+  - Passing `receiver_id` returns received payments (deposits).
+  - Passing `payer_id` returns sent payments (withdrawals).
 
 #### /payment
 * **GET `/:id`** → Returns a specific payment filtered by `id`.
 * **POST `/`** → Creates a new payment with a QR code.
-- **Body:**
-```json
- {
-   "receiver_id": "string(required)",
-   "amount": "float(optional)`"
- }
-```
-- If you don't provide `amount`, it creates a QR code payment without a fixed value. In that case, you must provide an `amount` when processing the payment (see endpoint below).
+  - **Body:**
+  ```json
+   {
+     "receiver_id": "string(required)",
+     "amount": "float(optional)`"
+   }
+  ```
+  - If you don't provide `amount`, it creates a QR code payment without a fixed value. In that case, you must provide an `amount` when processing the payment (see endpoint below).
 * **POST `/:id/pay`** → Processes a payment by transferring money from one account to another and marking it as `paid`.
-- **Body:**
-```json
-{
-  "qr_code_data": "string(required)",
-  "amount": "float(optional)`"
-}
-```
-- If the 15-minute processing time limit has elapsed, the payment will not be processed and will be marked as `expired`.
-- If something goes wrong, it will be marked as `failed`.
-- The program will get `TransactionAmount` from the QR code. If the QR code has no predefined value, you must provide an `amount` in the request body for the payment to be processed.
+  - **Body:**
+  ```json
+  {
+    "qr_code_data": "string(required)",
+    "amount": "float(optional)`"
+  }
+  ```
+  - If the 15-minute processing time limit has elapsed, the payment will not be processed and will be marked as `expired`.
+  - If something goes wrong, it will be marked as `failed`.
+  - The program will get `TransactionAmount` from the QR code. If the QR code has no predefined value, you must provide an `amount` in the request body for the payment to be processed.
 * **DELETE `/:id`** → Deletes payment by the given parameter `id`.
 
 ---
