@@ -19,7 +19,6 @@ const (
 	UserPayer    TypeUser = "payer_id"
 )
 
-// IsValidTypeUser verifica se a string é um TypeUser válido
 func IsValidTypeUser(userType string) (TypeUser, bool) {
 	switch userType {
 	case string(UserReceiver):
@@ -43,13 +42,12 @@ type PaymentData struct {
 }
 
 type CreatePaymentData struct {
-	Amount     float64 `json:"amount"`
-	ReceiverId string  `json:"receiver_id"`
+	Amount     *float64	`json:"amount,omitempty"`
+	ReceiverId string	`json:"receiver_id"`
 }
 
 type ProcessPaymentData struct {
-	QRCodeData string `json:"qr_code_data"`
+	QRCodeData string	`json:"qr_code_data"`
+	Amount     *float64	`json:"amount,omitempty"`
 }
 
-type RequestPaymentData struct {
-}

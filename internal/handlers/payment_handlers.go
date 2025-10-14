@@ -1,9 +1,6 @@
 package handlers
 
 import (
-	// "database/sql"
-	// "fmt"
-
 	"qr-payment/internal/core/models"
 	"qr-payment/internal/core/services"
 
@@ -32,7 +29,7 @@ func NewPaymentHandlers(service services.PaymentService) PaymentHandlers {
 func (h *paymentHandlers) GetAllPaymentsHandler(ctx *gin.Context) {
 	payments, err := h.service.GetAllPayments(ctx.Request.Context())
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 
@@ -45,7 +42,7 @@ func (h *paymentHandlers) GetAllPaymentsByUserIdHandler(ctx *gin.Context) {
 
 	payments, err := h.service.GetAllPaymentsByUserId(ctx.Request.Context(), user_type_param, user_id)
 	if err != nil {
-		ctx.JSON(404, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 
@@ -57,7 +54,7 @@ func (h *paymentHandlers) GetPaymentByIdHandler(ctx *gin.Context) {
 
 	payment, err := h.service.GetPaymentById(ctx.Request.Context(), id)
 	if err != nil {
-		ctx.JSON(404, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 
@@ -73,7 +70,7 @@ func (h *paymentHandlers) CreatePaymentHandler(ctx *gin.Context) {
 
 	payment, err := h.service.CreatePayment(ctx.Request.Context(), &req)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 
@@ -89,9 +86,9 @@ func (h *paymentHandlers) ProcessPaymentHandler(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.ProcessPayment(ctx.Request.Context(), user_id, req.QRCodeData)
+	err := h.service.ProcessPayment(ctx.Request.Context(), user_id, &req)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(200, gin.H{"status": "payment made successfully"})
@@ -102,7 +99,7 @@ func (h *paymentHandlers) RemovePaymentHandler(ctx *gin.Context) {
 
 	err := h.service.RemovePayment(ctx.Request.Context(), id)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 

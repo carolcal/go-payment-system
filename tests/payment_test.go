@@ -23,7 +23,7 @@ var payerID string
 func TestCreateUsers(t *testing.T){
 	payload := `{
 		"name": "Arthur Dent",
-		"cpf": "11111111111",
+		"cpf": "12372128043",
 		"balance": 5000.00,
 		"city": "Earth"
 	}`
@@ -48,10 +48,9 @@ func TestCreateUsers(t *testing.T){
 	users[result1.ID] = &result1
 	receiverID = result1.ID
 
-	//Add second user
 	payload = `{
 		"name": "Ford Prefect",
-		"cpf": "22222222222",
+		"cpf": "55651804064",
 		"balance": 3000.00,
 		"city": "Betelgeuse"
 	}`

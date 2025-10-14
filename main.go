@@ -1,13 +1,15 @@
 package main
 
 import (
-	// "database/sql"
 	"fmt"
+	"log"
 
 	"qr-payment/internal/core/services"
+	"qr-payment/internal/core/validators"
 	"qr-payment/internal/handlers"
 	"qr-payment/internal/infrastructure/database"
 	"qr-payment/internal/infrastructure/repository"
+	"qr-payment/internal/routes"
 
 	"github.com/gin-gonic/gin"
 
@@ -18,56 +20,28 @@ func main() {
 
 	db, err := database.NewDatabase()
 	if err != nil {
-		fmt.Print(err)
+		log.Fatalf("database init failed: %v", err)
 	}
-	defer db.Close()
+	defer func() {
+        if cerr := db.Close(); cerr != nil {
+            fmt.Printf("database close error: %v\n", cerr)
+        }
+    }()
 
 	urepository := repository.NewUserRepository(db)
-	uservices := services.NewUserService(urepository)
+	uvalidator := validators.NewUserValidator(urepository)
+	uservices := services.NewUserService(urepository, uvalidator)
 	uhandler := handlers.NewUserHandlers(uservices)
 	prepository := repository.NewPaymentRepository(db)
-	pservices := services.NewPaymentService(prepository, uservices)
+	pvalidator := validators.NewPaymentValidator(prepository)
+	pservices := services.NewPaymentService(prepository, pvalidator, uservices)
 	phandler := handlers.NewPaymentHandlers(pservices)
 
 	router := gin.Default()
-	setUpRoutes(router, phandler, uhandler)
+	routes.SetUpWebRoutes(router)
+	routes.SetUpUserRoutes(router, uhandler)
+	routes.SetUpPaymentRoutes(router, phandler)
 	router.Run("0.0.0.0:8080")
 }
 
-func setUpRoutes(router *gin.Engine, phandler handlers.PaymentHandlers, uhandler handlers.UserHandlers) {
 
-	router.LoadHTMLGlob("web/*.html")
-	router.Static("css", "./web/css")
-	router.Static("js", "./web/js")
-
-	router.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(200, "index.html", gin.H{})
-	})
-
-	users := router.Group("/users")
-	{
-		users.GET("", uhandler.GetAllUsersHandler)
-	}
-
-	user := router.Group("/user")
-	{
-		user.POST("", uhandler.CreateUserHandler)
-		user.GET("/:id", uhandler.GetUserByIdHandler)
-		user.PUT("/:id/balance", uhandler.UpdateBalanceHandler)
-		user.DELETE("/:id", uhandler.RemoveUserHandler)
-	}
-
-	payments := router.Group("/payments")
-	{
-		payments.GET("", phandler.GetAllPaymentsHandler)
-		payments.GET("/:user_id/:user_type", phandler.GetAllPaymentsByUserIdHandler)
-	}
-
-	payment := router.Group("/payment")
-	{
-		payment.POST("", phandler.CreatePaymentHandler)
-		payment.GET("/:id", phandler.GetPaymentByIdHandler)
-		payment.POST("/:user_id/pay", phandler.ProcessPaymentHandler)
-		payment.DELETE("/:id", phandler.RemovePaymentHandler)
-	}
-}

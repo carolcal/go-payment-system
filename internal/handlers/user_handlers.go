@@ -28,7 +28,7 @@ func NewUserHandlers(service services.UserService) UserHandlers {
 func (h *userHandlers) GetAllUsersHandler(ctx *gin.Context) {
 	payments, err := h.service.GetAllUsers(ctx.Request.Context())
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 
@@ -40,7 +40,7 @@ func (h *userHandlers) GetUserByIdHandler(ctx *gin.Context) {
 
 	user, err := h.service.GetUserById(ctx.Request.Context(), id)
 	if err != nil {
-		ctx.JSON(404, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *userHandlers) CreateUserHandler(ctx *gin.Context) {
 
 	user, err := h.service.CreateUser(ctx.Request.Context(), &req)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 
@@ -74,7 +74,7 @@ func (h *userHandlers) UpdateBalanceHandler(ctx *gin.Context) {
 
 	err := h.service.UpdateBalance(ctx.Request.Context(), id, req)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(200, gin.H{"status": "balance updated successfully"})
@@ -85,7 +85,7 @@ func (h *userHandlers) RemoveUserHandler(ctx *gin.Context) {
 	id := ctx.Param("id")
 	err := h.service.RemoveUser(ctx.Request.Context(), id)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+		ctx.JSON(models.HTTPStatus(err), gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(200, gin.H{"status": "deleted user successfully"})

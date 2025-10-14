@@ -19,7 +19,9 @@ export async function createPayment(event) {
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ amount: parseFloat(amount), receiver_id: user_id })
+			body: amount 
+				? JSON.stringify({ amount: parseFloat(amount), receiver_id: user_id })
+				: JSON.stringify({ receiver_id: user_id })
 		});
 
 		if (response.ok) {

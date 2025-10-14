@@ -3,6 +3,7 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -16,10 +17,29 @@ var createdUser models.UserData
 
 var createdUsersMap = make(map[string]*models.UserData)
 
-func TestCreateUser(t *testing.T){
+func TestCreateInvalidUser(t *testing.T) {
 	payload := `{
 		"name": "Arthur Dent",
-		"cpf": "11111111111",
+		"cpf": "111.111.111-11",
+		"balance": 5000.00,
+		"city": "Earth"
+	}`
+	url := router + "user"
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(payload)))
+	if err != nil {
+		t.Fatalf("Returned error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("Expected status code 400, got %d", resp.StatusCode)
+	}
+}
+
+func TestCreateValidUser(t *testing.T){
+	payload := `{
+		"name": "Arthur Dent",
+		"cpf": "123.721.280-43",
 		"balance": 5000.00,
 		"city": "Earth"
 	}`
@@ -32,6 +52,7 @@ func TestCreateUser(t *testing.T){
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
+		fmt.Println(resp)
 		t.Fatalf("Expected status code 201, got %d", resp.StatusCode)
 	}
 
@@ -43,7 +64,7 @@ func TestCreateUser(t *testing.T){
 
 	expected := models.UserData {
 		Name: "Arthur Dent",
-		CPF: "11111111111",
+		CPF: "12372128043",
 		Balance: 500000,
 		City: "Earth",
 	}
