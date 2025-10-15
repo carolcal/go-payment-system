@@ -139,6 +139,8 @@ export async function delUserById(id) {
 		if (response.ok) {
 			alert("User deleted successfully!");
 			getAllUsers();
+			document.getElementById('updateBalanceAmount').value = '';
+			document.getElementById('updateBalanceUser').hidden = true;
 			document.getElementById('accountInfo').hidden = true;
 			document.getElementById('getUserResult').hidden = true;
 		} else {

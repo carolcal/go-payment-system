@@ -125,7 +125,7 @@ export function createHistoryTable(data, user_type) {
 			}
 		});
 		const cpyButton = `<button type="button" class="cpy-btn" data-qr="${item.qr_code_data}">Copy QRCode</button>`
-		const delButton = `<button type="button" class="del-btn delpay-btn" data-id="${item.id}">DELETE /payment/:id</button>`;
+		const delButton = `<button type="button" class="del-btn del-${user_type}-btn" data-id="${item.id}">DELETE /payment/:id</button>`;
 		tableHTML += `<td>${cpyButton} ${delButton}</td>`;
 		tableHTML += '</tr>';
 	});
@@ -150,7 +150,7 @@ export function createHistoryTable(data, user_type) {
 		});
 	});
 
-	document.querySelectorAll('.delpay-btn').forEach(button => {
+	document.querySelectorAll(`.del-${user_type}-btn`).forEach(button => {
 		button.addEventListener('click', (event) => {
 			const id = event.target.getAttribute('data-id');
 			delPayment(id);

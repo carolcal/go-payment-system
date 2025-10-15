@@ -1,5 +1,5 @@
 import { createNewUser, updateBalance } from './users.js';
-import { createPayment, payPayment, getAllPayments } from './payment.js';
+import { createPayment, payPayment } from './payment.js';
 import { getAllUsers } from './users.js';
 
 document.getElementById('new-user-form').addEventListener('submit', createNewUser);
