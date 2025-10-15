@@ -9,10 +9,10 @@ It implements a simple payment system where you can create and process payments 
 
 The API exposes the following **endpoints**:
 
-#### /users
+### /users
 * **GET `/`** → Returns all users.
 
-#### /user
+### /user
 * **GET `/:id`** → Returns user filtered by parameter `id`.
 * **POST `/`** → Creates a new user.
   - **Body:**
@@ -34,13 +34,13 @@ The API exposes the following **endpoints**:
   - A positive value deposits money into the account, and a negative value withdraws from it.
 * **DELETE `/:id`** → Deletes user by the given parameter `id`.
 
-#### /payments
+### /payments
 * **GET `/`** → Returns all payments.
 * **GET `/:user_id/:user_type`** → Returns all payments for the given `user_id` and `user_type` (`receiver_id` or `payer_id`)
   - Passing `receiver_id` returns received payments (deposits).
   - Passing `payer_id` returns sent payments (withdrawals).
 
-#### /payment
+### /payment
 * **GET `/:id`** → Returns a specific payment filtered by `id`.
 * **POST `/`** → Creates a new payment with a QR code.
   - **Body:**
