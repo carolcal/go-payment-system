@@ -52,7 +52,7 @@ The API exposes the following **endpoints**:
   ```
   - If you don't provide `amount`, it creates a QR code payment without a fixed value. In that case, you must provide an `amount` when processing the payment (see endpoint below).
   - To make it simple, it uses the user's cpf as pix key.
-* **POST `/:id/pay`** → Processes a payment by transferring money from one account to another and marking it as `paid`.
+* **POST `/:user_id/pay`** → Processes a payment by transferring money from one account to another and marking it as `paid`.
   - **Body:**
   ```json
   {
@@ -60,6 +60,7 @@ The API exposes the following **endpoints**:
     "amount": "float(optional)`"
   }
   ```
+  - In `user_id`, you must provide the ID of the user who is making the payment (payer_id).
   - If the 15-minute processing time limit has elapsed, the payment will not be processed and will be marked as `expired`.
   - If something goes wrong, it will be marked as `failed`.
   - The program will get `TransactionAmount` from the QR code. If the QR code has no predefined value, you must provide an `amount` in the request body for the payment to be processed.
